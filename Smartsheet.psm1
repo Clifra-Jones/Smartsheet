@@ -256,6 +256,49 @@ function New-SmartSheetFormatString() {
     
     $formatString = $format.values -join ","
     return $formatString
+
+<#
+    .SYNOPSIS 
+    Creates a SMartsheet format string.
+    .DESCRIPTION
+    Creates a smartsheet format string to be used with column, row, and cell formatting.
+    .PARAMETER fontFamily
+    Sets the Font Family to use.
+    .PARAMETER fontSize
+    Sets the font size.
+    .PARAMETER bold
+    Sets to font to bold.
+    .PARAMETER italic
+    Sets the font to italic
+    .PARAMETER underline
+    Sets the font to underline
+    .PARAMETER stikethrew
+    Sets the font to strikethrough.
+    .PARAMETER horizontalAlign
+    Set the horizontal alignment
+    .PARAMETER verticalAlign
+    Set the vertical alignment
+    .PARAMETER textColor
+    Select the Text Color. Supports : autocomplete.
+    .PARAMETER backgroundColor
+    Select the Background color. Supports : autocomplete.
+    .PARAMETER taskbarColor 
+    Select the Taskbar color. Supports : autocomplete.
+    .PARAMETER currency
+    Select the Currency Symbol. Supports : autocomplete.
+    .PARAMETER decimalCount
+    Set the decimal count
+    .PARAMETER thousandsSeparator
+    Sets the thousands separator.
+    .PARAMETER numberFormat
+    Sets the Number format.
+    .PARAMETER textWrap
+    Sets textwrap.
+    .PARAMETER dateFormat
+    sets the date format. Supports : autocomplete.
+    .OUTPUTS
+    A Smartsheet format string in the form ",,1,1,,,,,,,,,,,,," this string would set the format to Bold & Underline.
+#>
 }
 
 # End Helper functions
