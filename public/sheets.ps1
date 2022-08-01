@@ -1,3 +1,4 @@
+
 function Get-Smartsheets () {
     <#
     .DESCRIPTION
@@ -39,7 +40,21 @@ function Get-Smartsheet () {
                 $msg = "Sheet {0} not found!" -f $Name
                 Throw $msg
             }
-            $id = $sheetInfo.id
+            if ($sheetInfo -is [array]) {
+                Write-Host "Select Which Sheet to load:"
+                Do {
+                    foreach ($Sheet in $sheetInfo) {
+                        $Msg = "{0}:{1}:{2}" -f ($sheetInfo.IndexOf($Sheet) +1), $Sheet.Name, $Sheet.modifiedAt 
+                        Write-Host $Msg
+                    }
+                    Write-Host "Q: Quit"
+                    $R = Read-Host "Select SmartSheet:"
+                    If ($R -eq "q") { exit}
+                } while ( $R -notin 1..$SheetInfo.Count)
+                $id = $sheetInfo[$R-1].id
+            } else {
+                $id = $sheetInfo.id
+            }
         }
         $Uri = "{0}/sheets/{1}" -f $BaseURI, $id
         $Sheet = Invoke-RestMethod -Method Get -Uri $Uri -Headers $Header
@@ -303,5 +318,91 @@ function Move-Smartsheet() {
     .PARAMETER containerType
     Can be in of 'folder', 'workspace or 'home'. If 'home' then containerId must be omitted.
     The default for this property is 'home' if omitted.
+    #>
+}
+
+function Get-SortedSmartsheet() {
+    [CmdletBinding(DefaultParameterSetName="single")]
+    Param(
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [string]$id,
+        [Parameter(ParameterSetName = "Multi")]
+        [psobject[]]$sortCriteria,
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "single"
+        )]
+        [string]$columnId,
+        [Parameter(  
+            ParameterSetName = "Asc"
+        )]
+        [switch]$Ascending,
+        [Parameter(
+            Mandatory = $true,    
+            ParameterSetName = "Desc"
+        )]
+        [switch]$Descending
+    )
+
+    $Headers = Get-Headers
+    $Uri = "{0}/sheets/{1}/sort" -f $BaseURI, $id
+    $body = $null
+    if ($sortCriteria) {
+        $body = $sortCriteria | ConvertTo-Json -Compress
+    } else {
+        $propreties = @{}
+        $propreties.Add("columnId", $columnId)
+        if ($Descending) {
+            $propreties.Add("direction","DESCENDING")
+        } else {
+            $propreties.Add("direction","ASCENDING")
+        }
+        $objBody = [PSCustomObject]$propreties
+        $body = $objBody | ConvertTo-Json -Compress
+    }
+
+    return Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+
+    <#
+    .SYNOPSIS
+    Sort rows in a Smartsheet.
+    .DESCRIPTION
+    Sort the rows in a smartsheet.
+    .PARAMETER id
+    Id of the sheet to srot rows in.
+    .PARAMETER sortCriteria
+    An array of sort criteria objects. The objects shoud have 2 properties, columnId and direction (ASCENDING or DESCENDING)
+    .PARAMETER columnId
+    Id of the column to sort on for a single column sort.
+    .PARAMETER Ascending
+    Sort the column Ascending (default)
+    .PARAMETER Descending
+    Sort the column Descending
+    .OUTPUTS
+    Sheet object with the results of the sort operation.
+    .EXAMPLE
+    How to create a multi-sort sortCriteria object.
+    I this example we are going to sort a Smartsheet of employee salary information by Department and Salary in descending order.
+    To create the sort Criteria, 1st create an array.
+    PS> $sortCriteria - @()
+    The create a criteria objects from the columns collection of a sheet object named $Sheet.
+    PS> $criteria - [PSCustomObject]@{
+        columnId = $Sheet.columns.Where({$_.title -eq "Department"}).ColumnId
+        direction = "ASCENDING"
+    }
+    Add this to the array.
+    $sortCriteria += $criteria
+    Create another criteria object
+    PS >$criteria = [PSCustomObject]@{
+        columnId = $Sheet.Columns.Where({$_,title -eq "Salary"}).ColumnId
+        direction = "DESCENDING"
+    }
+    Add this to the array
+    PS >$sortCriteria += $criteria
+    Now sort the sheet.
+    PS >$SortedSheet = $sheet | Get-SortedSmartSheet -SortCriteria $sortCriteria
     #>
 }

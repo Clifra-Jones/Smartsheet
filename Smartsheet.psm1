@@ -4,48 +4,20 @@ using namespace System.Collections.Generic
     Description: Powershell module to interact with the SMartsheet API
     Object specific functions are in the ./public folder.
 #>
-$script:BaseURI = "https://api.smartsheet.com/2.0"
 
-#Private function
-function Read-Config () {
-    $ConfigPath = "$home/.smartsheet/config.json"
-    $config = Get-Content -Raw -Path $ConfigPath | ConvertFrom-Json
-    return $config
-}
+$BaseURI = "https://api.smartsheet.com/2.0"
 
-function ConvertTo-UTime () {
-    Param(
-        [datetime]$DateTime
-    )
+# dot source the following files.
+. $PSScriptRoot/private/private.ps1
+. $PSScriptRoot/public/objects.ps1
+. $PSScriptRoot/public/columns.ps1
+. $PSScriptRoot/public/containers.ps1
+. $PSScriptRoot/public/rows.ps1
+. $PSScriptRoot/public/sheets.ps1
 
-    $uTime = ([System.DateTimeOffset]$DateTime).ToUnixTimeMilliseconds() / 1000
 
-    return $Utime
-}
-
-function ConvertFrom-UTime() {
-    Param(
-        [decimal]$Utime
-    )
-
-    [DateTime]$DateTime = [System.DateTimeOffset]::FromUnixTimeMilliseconds(1000 * $Utime).LocalDateTime
-
-    return $DateTime
-}
-
-function Get-Headers() {
-    $config = Read-Config
-    $Authorization = "Bearer {0}" -f $Config.APIKey
-    $Headers = @{
-        "Authorization" = $Authorization
-        "Content-Type" = 'application/json'
-    }
-    return $Headers
-}
-
-# end private functions
-
-function Set-APIKey () {
+# Setup Functions
+function Set-SmartsheetAPIKey () {
     Param(
         [Parameter(Mandatory = $true)]
         [string]$APIKey
@@ -74,7 +46,11 @@ function Set-APIKey () {
     #>    
 } 
 
+# End Setup Functions
+
+#Export Functions
 function Export-SmartSheet() {
+    [CmdletBinding(DefaultParameterSetName = "none")]
     Param(
         [Parameter(
             ValueFromPipeline = $true
@@ -89,12 +65,14 @@ function Export-SmartSheet() {
             "Replace",
             "Rename"
         )]
+        [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
         [string]$overwriteAction,
+        [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
         [string]$overwriteSheetId
     )
     
     Begin {
-        $Headers = Get-Headers
+        $Headers = Get-Headers -ContentType:text/csv -ContentDisposition:attachment
         $folderId = $null
         if ($folder) {
             if ($folder.Contains("/")) {                
@@ -108,10 +86,11 @@ function Export-SmartSheet() {
                     $currentFolder = $currentFolder.Where($_.Name -eq $_)                        
                 }
                 #$FolderId = $currentFolder.Id
-            } else {
+            }
+            else {
                 #get a folder off the root
                 $rootfolders = Get-SmartsheetHomeFolders
-                $currentFolder = $folders.Where({$_.name -eq $Folder})
+                $currentFolder = $folders.Where({ $_.name -eq $Folder })
             }
             $folderId = $currentFolder.Id
         }
@@ -130,7 +109,8 @@ function Export-SmartSheet() {
         $body = $encoder.GetBytes($inputString)
         If ($FolderId) {
             $Uri = "{0}/folders/{1}/sheets/import?sheetName={2}" -f $BaseURI, $folderId, $SheetName
-        } else {
+        }
+        else {
             $Uri = "{0}/sheets/import?sheetName={1}" -f $BaseURI, $SheetName
         }
         if ($headerRow -ge 0) {
@@ -139,13 +119,16 @@ function Export-SmartSheet() {
         if ($PrimaryColumn) {
             $Uri = "{0}&primaryColumnIndex={1}" -f $Uri, $PrimaryColumn
         }
+<#      
         $Headers.Remove("Content-Type")
-        $Headers.Add("Content-Type","text/csv")
-        $Headers.add("Content-Disposition","attachment")
+        $Headers.Add("Content-Type", "text/csv")
+        $Headers.add("Content-Disposition", "attachment")
+ #>        
         $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
         if (-not $response.message -eq "SUCCESS") {
             Throw "Import failed! $($_.Exception.Message)"
-        } else {
+        }
+        else {
             switch ($overwriteAction) {
                 "Replace" {
                     Remove-Smartsheet -Id $overwriteSheetId
@@ -186,6 +169,13 @@ function Export-SmartSheet() {
         
         .PARAMETER primaryColumn
         The column to use as the primary column. default is the 1st column.
+        
+        .PARAMETER overwriteAction
+        What to do of the sheet name already exists. Choices are Replace or Rename.
+        Multiple sheets can have the same name in a folder. If you omit this parameter a sheet with the same name will be created.
+
+        .PARAMETER overwriteSheetId
+        Because tou can have multiple sheets with the same name (with different sheet Ids) you must provide the sheet Id for the overwrite action.
 
         .EXAMPLE
         PS> $ObjectArray | Export-Smartsheet -SheetName "MyNewSheet"
@@ -194,3 +184,78 @@ function Export-SmartSheet() {
         PS> $objectArray | Export-Smartsheet -SheetName "MyNewSheet" -folder 'myfolder1/myfolder2'
     #>
 }
+
+# End Export Functions
+
+#Helper functions
+function New-SmartSheetFormatString() {
+    Param(
+        [ValidateSet("Arial", "Tahoma", "Times New Roman", "Verdana")]
+        [string]$fontFamily,
+        [int]$fontSize,
+        [switch]$bold,
+        [switch]$italic,
+        [switch]$underline,
+        [switch]$stikethrew,
+        [ValidateSet("left", "center", "right")]
+        [string]$horizontalAlign,
+        [ValidateSet("top", "middle", "bottom")]
+        [string]$verticalAlign,
+        [ValidateSet("Navajo White", "Black", "White", "White_2", "Lavender blush", "Sazerac", "Chilean Heath", "Panache", "Solitude", "French Lilac", "Merino", "Pastel Pink", "Navajo White_2", "Dolly", "Zanah", "French Pass", "French Lilac_2", "Almond", "Mercury", "Froly", "Chardonnay", "Yellow", "De York", "Malibu", "Light Wisteria", "Tan", "Silver", "Cinnabar", "Pizazz", "Turbo", "Chateau Green", "Denim", "Seance", "Brown", "Sonic Silver", "Tamarillo", "Trinidad", "Corn", "Forest Green", "Catalina Blue", "Purple", "Carnaby Tan")]
+        [string]$textColor,
+        [ValidateSet("Navajo White", "Black", "White", "White_2", "Lavender blush", "Sazerac", "Chilean Heath", "Panache", "Solitude", "French Lilac", "Merino", "Pastel Pink", "Navajo White_2", "Dolly", "Zanah", "French Pass", "French Lilac_2", "Almond", "Mercury", "Froly", "Chardonnay", "Yellow", "De York", "Malibu", "Light Wisteria", "Tan", "Silver", "Cinnabar", "Pizazz", "Turbo", "Chateau Green", "Denim", "Seance", "Brown", "Sonic Silver", "Tamarillo", "Trinidad", "Corn", "Forest Green", "Catalina Blue", "Purple", "Carnaby Tan")]
+        [string]$backgroundColor,
+        [ValidateSet("Navajo White", "Black", "White", "White_2", "Lavender blush", "Sazerac", "Chilean Heath", "Panache", "Solitude", "French Lilac", "Merino", "Pastel Pink", "Navajo White_2", "Dolly", "Zanah", "French Pass", "French Lilac_2", "Almond", "Mercury", "Froly", "Chardonnay", "Yellow", "De York", "Malibu", "Light Wisteria", "Tan", "Silver", "Cinnabar", "Pizazz", "Turbo", "Chateau Green", "Denim", "Seance", "Brown", "Sonic Silver", "Tamarillo", "Trinidad", "Corn", "Forest Green", "Catalina Blue", "Purple", "Carnaby Tan")]
+        [string]$taskbarColor,
+        [ValidateSet("RUB", "SEK", "AUD", "CAD", "KRW", "USD", "ARS", "NZD", "NOK", "INR", "EUR", "ILS", "SGD", "CNY", "none", "DKK", "BRL", "GBP", "HKD", "JPY", "CLP", "MXN", "CHF", "ZAR")]
+        [string]$currency,
+        [int]$decimalCount,
+        [switch]$thousandsSeparator,
+        [ValidateSet("none", "NUMBER", "CURRENCY", "PERCENT")]
+        [string]$numberFormat,
+        [switch]$textWrap,
+        [ValidateSet("LOCALE_BASED", "MMMM_D_YYYY", "MMM_D_YYYY", "D_MMM_YYYY", "YYYY_MM_DD_HYPHEN", "YYYY_MM_DD_DOT", "DWWWW_MMMM_D_YYYY", "DWWW_DD_MMM_YYYY", "DWWW_MM_DD_YYYY", "MMMM_D", "D_MMMM")]
+        [string]$dateFormat
+    )
+    $format = [ordered]@{
+        fontFamily         = $null
+        fontSize           = $null
+        bold               = $null
+        italic             = $null
+        underlined         = $null
+        strikethrough      = $null
+        horizontalAlign    = $null
+        verticalAlign      = $null
+        textcolor          = $null
+        backgroundColor    = $null
+        taskbarColor       = $null
+        currency           = 13
+        decimalCount       = 2
+        thousandsSeparator = $null
+        numberFormat       = $null
+        textWrap           = $null
+        dateFormat         = $null
+    }
+    if ($fontFamily) { $format.fontFamily = $smformat.fontFamilies[$fontFamily] }
+    if ($fontSize) { $format.fontSize = $fontSize }
+    if ($bold) { $format.bold = 1 }
+    if ($italic) { $format.italic = 1 }
+    if ($underline) { $format.underlined = 1 }
+    if ($stikethrew) { $format.strikethrough = 1 }
+    if ($horizontalAlign) { $format.horizontalAlign = $smformat.horizontalAlign[$horizontalAlign] }
+    if ($verticalAlign) { $format.verticalAlign = $smformat.verticalAlign[$verticalAlign] }
+    if ($textColor) { $format.textcolor = $smformat.colors[$textColor] }
+    if ($backgroundColor) { $format.backgroundColor = $smformat.colors[$backgroundColor] }
+    if ($taskbarColor) { $format.backgroundColor = $smformat.colors[$backgroundColor] }
+    if ($currency) { $format.currency = $smformat.currency[$currency] }
+    if ($decimalCount) { $format.decimalCount = $decimalCount }
+    if ($thousandsSeparator) { $format.thousandsSeparator = 1 }
+    if ($numberFormat) { $format.numberFormat = $smformat.numberFormats[$numberFormat] }
+    if ($textWrap) { $format.textWrap = 1 }
+    if ($dateFormat) { $format.dateFormat = $smformat.dateFormats[$dateFormat] }
+    
+    $formatString = $format.values -join ","
+    return $formatString
+}
+
+# End Helper functions

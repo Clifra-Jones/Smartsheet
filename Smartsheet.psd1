@@ -66,19 +66,21 @@ ScriptsToProcess = @('./public/public.ps1')
 # FormatsToProcess = @()
 
 # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(
+<# NestedModules = @(
     "./public/objects.psm1",
     "./public/sheets.psm1",
     "./public/rows.psm1",
     "./public/columns.psm1",
     "./public/containers.psm1"
-)
+) #>
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
     'Set-APIKey',
+    'Get-ServerInfo',
     'Get-Smartsheets',
     'Get-Smartsheet',
+    'Get-SortedSmartsheet',
     'Remove-Smartsheet',
     "Copy-Smartsheet",
     "Rename-SmartSheet",
@@ -106,7 +108,9 @@ FunctionsToExport = @(
     'Export-SmartSheet',
     'New-SmartsheetCell',
     'New-HyperLink',
-    'New-CellLink'
+    'New-CellLink',
+    'New-SmartSheetFormatString',
+    'Export-SmartsheetRows'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

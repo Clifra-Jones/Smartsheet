@@ -29,11 +29,25 @@ function ConvertFrom-UTime() {
 }
 
 function Get-Headers() {
+    Param(
+        [ValidateSet(
+            'application/json',
+            'text/csv'
+        )]$ContentType = 'application/json',
+        [ValidateSet(
+            'attachment'
+        )]$ContentDisposition
+    )
     $config = Read-Config
     $Authorization = "Bearer {0}" -f $Config.APIKey
+
     $Headers = @{
         "Authorization" = $Authorization
-        "Content-Type" = 'application/json'
+        "Content-Type"  = $ContentType
     }
+    if ($ContentDisposition) {
+        $Headers.Add('Content-Disposition', $ContentDisposition)
+    }
+
     return $Headers
 }

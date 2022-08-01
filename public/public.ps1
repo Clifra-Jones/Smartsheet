@@ -1,3 +1,119 @@
+$ServerInfo = @'
+  {
+    "fontFamilies": {
+      "Arial": 0,
+      "Tahoma": 1,
+      "Times New Roman": 2,
+      "Verdana": 3
+    },
+    "FontSizes": {
+      "8": 0,
+      "9": 1,
+      "10": 2,
+      "12": 3,
+      "14": 4,
+      "16": 5,
+      "18": 6,
+      "20": 7,
+      "24": 8,
+      "28": 9,
+      "32": 10,
+      "36": 11
+    },
+    "colors": {
+      "Carnaby Tan_2": 0,
+      "Black": 1,
+      "White": 2,
+      "White_2": -1,
+      "Lavender blush": 4,
+      "Sazerac": 5,
+      "Chilean Heath": 6,
+      "Panache": 7,
+      "Solitude": 8,
+      "French Lilac": 9,
+      "Merino": 10,
+      "Pastel Pink": 11,
+      "Navajo White": 12,
+      "Dolly": 13,
+      "Zanah": 14,
+      "French Pass": 15,
+      "French Lilac_2": -1,
+      "Almond": 17,
+      "Mercury": 18,
+      "Froly": 19,
+      "Chardonnay": 20,
+      "Yellow": 21,
+      "De York": 22,
+      "Malibu": 23,
+      "Light Wisteria": 24,
+      "Tan": 25,
+      "Silver": 26,
+      "Cinnabar": 27,
+      "Pizazz": 28,
+      "Turbo": 29,
+      "Chateau Green": 30,
+      "Denim": 31,
+      "Seance": 32,
+      "Brown": 33,
+      "Sonic Silver": 34,
+      "Tamarillo": 35,
+      "Trinidad": 36,
+      "Corn": 37,
+      "Forest Green": 38,
+      "Catalina Blue": 39,
+      "Purple": 40,
+      "Carnaby Tan": 41
+    },
+    "currency": {
+      "none": 0,
+      "ARS": 1,
+      "AUD": 2,
+      "BRL": 3,
+      "CAD": 4,
+      "CLP": 5,
+      "EUR": 6,
+      "GBP": 7,
+      "ILS": 8,
+      "INR": 9,
+      "JPY": 10,
+      "MXN": 11,
+      "RUB": 12,
+      "USD": 13,
+      "ZAR": 14,
+      "CHF": 15,
+      "CNY": 16,
+      "DKK": 17,
+      "HKD": 18,
+      "KRW": 19,
+      "NOK": 20,
+      "NZD": 21,
+      "SEK": 22,
+      "SGD": 23
+    },
+    "numberFormats": {
+      "none": 0,
+      "NUMBER": 1,
+      "CURRENCY": 2,
+      "PERCENT": 3
+    },
+    "dateFormats": {
+      "LOCALE_BASED": 0,
+      "MMMM_D_YYYY": 1,
+      "MMM_D_YYYY": 2,
+      "D_MMM_YYYY": 3,
+      "YYYY_MM_DD_HYPHEN": 4,
+      "YYYY_MM_DD_DOT": 5,
+      "DWWWW_MMMM_D_YYYY": 6,
+      "DWWW_DD_MMM_YYYY": 7,
+      "DWWW_MM_DD_YYYY": 8,
+      "MMMM_D": 9,
+      "D_MMMM": 10
+    }
+  }
+'@
+
+$global:SSFormat = $ServerInfo | ConvertFrom-Json
+
 <# using namespace System.Collections.Generic
 
 enum cellProperties {

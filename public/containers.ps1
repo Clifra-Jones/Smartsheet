@@ -91,9 +91,8 @@ function Add-SmartsheetFolder() {
 }
 
 function Get-SmartsheetHome() {
-
     $Headers = Get-Headers 
-    $Uri = "{0}/home"
+    $Uri = "{0}/home" -f $BaseURI
 
     $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
 
