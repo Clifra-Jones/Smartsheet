@@ -136,7 +136,7 @@ function Export-SmartSheet() {
                 "Rename" {
                     $sheetName = (Get-Smartsheet -id $overwriteSheetId).Name
                     $strDate = Get-Date -Format "yyyyMMdd-HHmm"
-                    $newSheetName = "copyOf_{0}_{1}" -f $SheetName, $strDate
+                    $newSheetName = "Copy Of_{0}_{1}" -f $SheetName, $strDate
                     Rename-SmartSheet -Id $overwriteSheetId -newSheetName $newSheetName
                 }
             }
