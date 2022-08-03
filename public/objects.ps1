@@ -25,6 +25,30 @@ function New-SmartSheetCell() {
     if ($value) { $properties.Add("value", $value) }
     $cell = [PSCustomObject]$properties
     return $cell
+    <#
+    .SYNOPSIS
+    Creates a new Smartsheet Cell object
+    .PARAMETER columnId
+    Column ID of the cell
+    .PARAMETER conditionalFormat
+    A conditional format object.
+    .PARAMETER format
+    A format descriptor sctring.
+    .PARAMETER formula
+    A formula string
+    .PARAMETER hyperlink
+    A hyperlink object
+    .PARAMETER image
+    An image object.
+    .PARAMETER linkInFromCell
+    A cell link object
+    .PARAMETER linksOutFromCell
+    A cell link object
+    .PARAMETER value
+    The value of the cell
+    .OUTPUTS
+    A smartsheet cell object.
+    #>
 }
 
 function New-Hyperlink() {
@@ -47,6 +71,18 @@ function New-Hyperlink() {
     }
 
     return $hyperlink
+    <#
+    .SYNOPSIS
+    Creates a new Smartsheet Hyperlink object.
+    .PARAMETER reportId
+    Target report Id.
+    .PARAMETER sheetId
+    Target sheet Id.
+    .PARAMETER sightId
+    Target sight od.
+    .PARAMETER url
+    Target URL.
+    #>
 }
 
 function New-CellLink() {
@@ -68,4 +104,16 @@ function New-CellLink() {
         $sheetName  = $sheetName
     }
     return $cellLink
+    <#
+    .SYNOPSIS
+    Creates a new cell link object,
+    .PARAMETER sheetid
+    Target Sheet Id.
+    .PARAMETER sheetName
+    Target Sheet name.
+    .PARAMETER columnId
+    Target column Id.
+    .PARAMETER rowId
+    Target row Id.
+    #>
 }

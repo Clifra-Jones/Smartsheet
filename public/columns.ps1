@@ -38,37 +38,51 @@ function Set-SmartsheetColumn {
             Mandatory = $true,
             ParameterSetName = "props"
         )]
-        [Parameter(ParameterSetName = "column")]
+        [Parameter(Mandatory = $true, ParameterSetName = "column")]
         [string]$Id,
         [Parameter(
             Mandatory = $true,    
             ParameterSetName="column",
             ValueFromPipeline = $true
         )]
-        [Column]$column,
+        [psObject]$column,
         [Parameter(
-            Mandatory = $true
+            Mandatory = $true,
+            ParameterSetName = 'props'
         )]
         [string]$ColumnId,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName ='props')]
         [int]$Index,
+        [Parameter(ParameterSetName ='props')]
         [string]$title,
+        [Parameter(ParameterSetName ='props')]
         [string]$description,
         [ValidateSet("ABSTRACT_DATETIME", "CHECKBOX", "CONTACT_LIST", "DATE", 
             "DATETIME", "DURATION", "MULTI_CONTACT_LIST", "MULTI_PICKLIST", "PICKLIST", "PREDECESSOR", "TEXT_NUMBER")]
+        [Parameter(ParameterSetName ='props')]
         [string]$type,
+        [Parameter(ParameterSetName ='props')]
         [psobject]$formula,
+        [Parameter(ParameterSetName ='props')]
         [bool]$hidden,
+        [Parameter(ParameterSetName ='props')]
         [psobject]$autoNumberFormat,
+        [Parameter(ParameterSetName ='props')]
         [psobject]$contactOptions,
+        [Parameter(ParameterSetName ='props')]
         [string]$format,
+        [Parameter(ParameterSetName ='props')]
         [bool]$locked,
+        [Parameter(ParameterSetName ='props')]
         [string[]]$options,
+        [Parameter(ParameterSetName ='props')]
         [string]$symbol,
         [ValidateSet("AUTO_NUMBER", "CREATED_BY", "CREATED_DATE", "MODIFIED_BY", "MODIFIED_DATE")]
+        [Parameter(ParameterSetName ='props')]
         [string]$systemColumnType,
+        [Parameter(ParameterSetName ='props')]
         [bool]$validation,
-        [int]$version,
+        [Parameter(ParameterSetName ='props')]
         [int]$width
     )
 
@@ -118,7 +132,7 @@ function Set-SmartsheetColumn {
     .PARAMETER column
     A Smartsheet column object. Cannot be used with column property parameters.
     .PARAMETER ColumnId
-    Id of teh column to update.
+    Id of the column to update.
     .PARAMETER Index
     Index if the column to update.
     .PARAMETER title
@@ -195,7 +209,7 @@ function Add-SmartsheetColumn() {
             ParameterSetName="column",
             ValueFromPipeline = $true
         )]
-        [Column]$column,
+        [psObject]$column,
         [Parameter(
             Mandatory = $true
         )]
@@ -210,7 +224,7 @@ function Add-SmartsheetColumn() {
         [psobject]$formula,
         [bool]$hidden,
         [psobject]$autoNumberFormat,
-        [psobject]$contactObject,
+        [psobject]$contactOptions,
         [string]$format,
         [bool]$locked,
         [string[]]$options,
@@ -237,7 +251,7 @@ function Add-SmartsheetColumn() {
         if ($formula) { $properties.Add("formula", $formula) }
         if ($hidden) { $properties.Add("hidden", $hidden) }
         if ($autoNumberFormat) { $Properties.Add("autoNumberFormat", $autoNumberFormat) }
-        if ($contactObject) { $properties.Add("contactObject", $contactObject) }
+        if ($contactOptions) { $properties.Add("contactObject", $contactOptions) }
         if ($description) { $properties.Add("description", $description) }
         if ($format) { $properties.Add("format", $format) }
         if ($locked) { $properties.Add("locked", $locked) }
@@ -284,6 +298,9 @@ function Add-SmartsheetColumn() {
     Object that describes how the the System Column type of "AUTO_NUMBER" is auto-generated.
     .PARAMETER contactOptions
     Array of ContactOption objects to specify a pre-defined list of values for the column. Column type must be CONTACT_LIST.
+    The contact option object is in the form: 
+    email = {email address}
+    name = {contact name}
     .PARAMETER format
     Format string.
     .PARAMETER locked
@@ -304,7 +321,26 @@ function Add-SmartsheetColumn() {
     Display width of the column in pixels.
     .OUTPUTS
     An updated column object.
-    #>
+    .EXAMPLE
+    To add a new colum to a Smartsheet.
+    PS> $newColumn = $Sheet | Add-SmartsheetColumn -title "Title" -type:TEXT_NUMBER -description 'My new column'
+    .EXAMPLE
+    To insert a new column at position 4 (columns after position 4 are shifted to the right and thier index incremented).
+    PS> $newColumn = $Sheet | Add-SmartsheetColumn -title "Asset" -type:TEXT_NUMBER -Description "Fixed asset" -index 4
+    .Example 
+    Add a new column with contact objects.
+    PS> $contacts = @(
+        @{
+            email = "johndoe@example.com"
+            name = "John Doe"
+        },
+        @{
+            email = "janedoe@example.com"
+            name = 'Jane Doe
+        }
+    )
+    PS> $newColumn = $Sheet | Add-SmartsheetColumn -title "EmployeeName" -type:TEXT_NUMBER -contactOption $contacts
+    #>    
 }
 
 function Add-SmartsheetColumns() {
@@ -314,7 +350,7 @@ function Add-SmartsheetColumns() {
             ValueFromPipelineByPropertyName = $true
         )]
         [string]$Id,
-        [List[Column]]$columns
+        [psobject[]]$columns
     )
 
     $Headers = Get-Headers

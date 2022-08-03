@@ -80,7 +80,7 @@ function Add-SmartsheetFolder() {
     .DESCRIPTION
     Add a folder to an existing Smartsheet folder. 
     This function will not add folder to the home folder. Use Add-SmartsheetHomeFolder to add a folder to home.
-    This finction creates an empty folder. The functionality to create prepopulated folders my be included in the future.
+    This function creates an empty folder. The functionality to create prepopulated folders my be included in the future.
     .PARAMETER Id
     Id fo the folder to create the new folder in.
     .PARAMETER folderName

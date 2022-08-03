@@ -14,6 +14,7 @@ $BaseURI = "https://api.smartsheet.com/2.0"
 . $PSScriptRoot/public/containers.ps1
 . $PSScriptRoot/public/rows.ps1
 . $PSScriptRoot/public/sheets.ps1
+. $PSScriptRoot/public/shares.ps1
 
 
 # Setup Functions
@@ -151,6 +152,7 @@ function Export-SmartSheet() {
         .DESCRIPTION 
         Exports an array of PSObjects into a smartsheet. This function will always create a new sheet even if
         there is a sheet of the same name. The API will attempt to determine column types.
+        To prevent Sheets of the same name being created, use the -overwriteAction and -overwriteSheetId parameters.
 
         .PARAMETER InputObject
         Object to create the Smartsheet from
@@ -296,8 +298,6 @@ function New-SmartSheetFormatString() {
     Sets textwrap.
     .PARAMETER dateFormat
     sets the date format. Supports : autocomplete.
-    .OUTPUTS
-    A Smartsheet format string in the form ",,1,1,,,,,,,,,,,,," this string would set the format to Bold & Underline.
 #>
 }
 

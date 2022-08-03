@@ -5,23 +5,86 @@ function Add-SmartsheetRow() {
     Param(
         [Parameter(
             Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "props"
+            ValueFromPipelineByPropertyName = $true
         )]
-        [Parameter(ParameterSetName="row")]
-        [string]$Id,
         [Parameter(
             Mandatory = $true,
-            ParameterSetName = "row"
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'row'
         )]
-        [psObject]$Row,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'props'
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,            
+            ParameterSetName = 'top'
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'top2'
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'above'
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'above2'
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'below'
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = 'below2'
+        )]
+        [string]$Id,
+        [Parameter(Mandatory = $true, ParameterSetName = "row")]
+        [Parameter(Mandatory = $true, ParameterSetName = 'top2')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'above2')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'below2')]
+        [psObject]$Row,        
+        [Parameter(ParameterSetName = 'props')]        
+        [Parameter(ParameterSetName = 'top')]
+        [Parameter(ParameterSetName = 'above')]
+        [Parameter(ParameterSetName = 'below')]
         [bool]$expanded,
+        [Parameter(ParameterSetName = 'props')]
+        [Parameter(ParameterSetName = 'top')]
+        [Parameter(ParameterSetName = 'above')]
+        [Parameter(ParameterSetName = 'below')]
         [string]$format,
+        [Parameter(
+            Mandatory = $true,    
+            ParameterSetName = 'props'
+        )]
+        [Parameter(Mandatory = $true, ParameterSetName = 'top')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'above')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'below')]
         [psobject[]]$cells,
-        [bool]$locked,
+        [Parameter(ParameterSetName = 'props')]
+        [Parameter(ParameterSetName = 'top')]
+        [Parameter(ParameterSetName = 'above')]
+        [Parameter(ParameterSetName = 'below')]
+        [bool]$locked, 
+        [Parameter(ParameterSetName = 'top')]
+        [Parameter(ParameterSetName = "top2")]
         [switch]$top,
+        [Parameter(ParameterSetName = 'above')]
+        [Parameter(ParameterSetName = 'above2')]
         [string]$aboveRow,
-        [string]$belowRow
+        [Parameter(ParameterSetName = 'below')]
+        [Parameter(ParameterSetName = 'below2')]
+        [string]$belowRow #>
     )
 
     $Headers = Get-Headers
@@ -63,21 +126,21 @@ function Add-SmartsheetRow() {
     .PARAMETER Id
     Id of the sheet to add row to.
     .PARAMETER Row
-    A row object to add toi the sheet. Cannot be used with individual row properties.
+    A row object to add to the sheet. Cannot be used with individual row properties.
     .PARAMETER expanded
     Indicates whether the row is expanded or collapsed.
     .PARAMETER format
-    Format descriptor. Only returned if the include query string parameter contains format and this row has a non-default format applied.
+    Format descriptor. Use New-SmartsheetFormatString to create format descriptors.
     .PARAMETER Cells
     Cells belonging to the row.
     .PARAMETER locked
     Indicates whether the row is locked.
     .PARAMETER top
-    place the new row ar the top of the sheet
+    place the new row at the top of the sheet (Cannot be used with belowRow or aboveRow)
     .PARAMETER aboveRow
-    Place the new row above the row ID assigned to this parameter (cannot be used with belowRow).
+    Place the new row above the row ID assigned to this parameter (cannot be used with top or belowRow).
     .PARAMETER belowRow
-    Place the new row beloe the row ID assigned to this parameter (cannot be used wuth aboveRow).
+    Place the new row below the row ID assigned to this parameter (cannot be used with top or aboveRow).
     .OUTPUTS
     The newly added row object.
     #>
@@ -90,7 +153,7 @@ function Add-SmartsheetRows() {
         )]
         [string]$Id,
         [Parameter(Mandatory = $true)]
-        [Row[]]$Rows
+        [psobject[]]$Rows
     )
 
     $Headers = Get-Headers
@@ -186,7 +249,6 @@ function Remove-SmartsheetRows() {
         return $false
     }
     <#
-<#
     .SYNOPSIS
     Remove a Smartsheet Rows
     .DESCRIPTION
@@ -217,13 +279,13 @@ function Set-SmartsheetRow() {
             ParameterSetName = "row"
         )]
         [psobject]$Row,
+        [Parameter(ParameterSetName = 'props')]
         [bool]$expanded,
+        [Parameter(ParameterSetName = 'props')]
         [string]$format,
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "props"
-        )]
+        [Parameter(ParameterSetName = "props")]
         [psobject[]]$Cells,
+        [Parameter(ParameterSetName = 'props')]
         [bool]$locked
     )
 
@@ -234,12 +296,15 @@ function Set-SmartsheetRow() {
     if ($Row) {
         $body = $Row | ConvertTo-Json -Compress
     } else {
-        $row = [Row]::New()
-        if ($expanded) { $Row.expanded = $expanded }
-        if ($format) { $Row.format = $format }
-        if ($locked) { $Row.locked = $locked}
-        $Row.Cell = $Cells
+        $properties = [ordered]@{}
+        if ($expanded) { $properties.Add("expanded", $expanded) }
+        if ($format) { $properties.Add("format", $format) }
+        if ($locked) { $properties.Add("locked", $locked) }
+        If ($Cells) { $properties.Add("Cells", $Cells)}
+        $Row = [psCustomObject]$properties
+        $body = $Row | ConvertTo-Json -Compress
     }
+    
     $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
     if ($response.message -eq "SUCCESS") {
         return $true
@@ -275,7 +340,7 @@ function Set-SmartsheetRows() {
             ValueFromPipelineByPropertyName = $true
         )]
         [string]$Id,
-        [Row[]]$Rows
+        [psobject[]]$Rows
     )
 
     $Headers = Get-Headers

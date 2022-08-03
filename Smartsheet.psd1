@@ -86,7 +86,7 @@ FunctionsToExport = @(
     "Rename-SmartSheet",
     "Move-SmartSheet",
     'Get-SmartsheetColumn',
-    'Set-SmartsheetColum',
+    'Set-SmartsheetColumn',
     'Get-SmartsheetColumns',
     'Add-SmartsheetColumn',
     'Add-SmartsheetColumns',
@@ -110,7 +110,13 @@ FunctionsToExport = @(
     'New-HyperLink',
     'New-CellLink',
     'New-SmartSheetFormatString',
-    'Export-SmartsheetRows'
+    'Export-SmartsheetRows',
+    'Send-SmartsheetViaEmail',
+    'Add-SmartsheetShare',
+    'Get-SmartsheetShares',
+    'Get-SmartSheetShare',
+    'Remove-SmarsheetShare',
+    'Set-SmartsheetShare'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
