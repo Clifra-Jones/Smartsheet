@@ -298,6 +298,8 @@ function New-SmartSheetFormatString() {
     Sets textwrap.
     .PARAMETER dateFormat
     sets the date format. Supports : autocomplete.
+    .OUTPUTS
+    A string representing a Smartsheet formatting string.
 #>
 }
 
