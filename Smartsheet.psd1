@@ -115,8 +115,11 @@ FunctionsToExport = @(
     'Add-SmartsheetShare',
     'Get-SmartsheetShares',
     'Get-SmartSheetShare',
-    'Remove-SmarsheetShare',
-    'Set-SmartsheetShare'
+    'Remove-SmartsheetShare',
+    'Set-SmartsheetShare',
+    'Get-SmartsheetAttachments',
+    'Add-SmartsheetAttachment',
+    'Get-SmartSheetAttachment'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

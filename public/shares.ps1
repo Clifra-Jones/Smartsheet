@@ -18,7 +18,7 @@ function Add-SmartsheetShare() {
         [string]$email,
         [string]$subject,
         [string]$message,
-        [bool]$ccMe
+        [switch]$ccMe
     )
 
     Begin {
@@ -86,10 +86,10 @@ function Get-SmartsheetShares() {
     }
 
     Process {
-        $Uri = "{0}/sheets{1}/shares" -f $BaseURI, $id
+        $Uri = "{0}/sheets/{1}/shares" -f $BaseURI, $id
         try {
             $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
-            return $response.result
+            return $response.data
         } catch {
             Throw $_
         }
@@ -141,7 +141,7 @@ function Get-SmartSheetShare() {
     #>
 }
 
-function Remove-SmarsheetShare() {
+function Remove-SmartsheetShare() {
     [CmdletBinding(DefaultParameterSetName = 'none')]
     Param(
         [Parameter(
@@ -158,8 +158,14 @@ function Remove-SmarsheetShare() {
     }
 
     Process {
-        $Uri = "{0}/sheets/{1}/shares{2}" -f $BaseURI, $Id, $shareId
-        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        $Uri = "{0}/sheets/{1}/shares/{2}" -f $BaseURI, $Id, $shareId
+        try {
+            $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers -Body $body
+        } catch {
+            $ErrorDetails = $_.ErrorDetails | ConvertFrom-Json
+            Write-Host $ErrorDetails.Message -ForegroundColor Red
+            exit
+        }
         if ($response.message -eq "SUCCESS") {
             return $true
         } else {
@@ -183,8 +189,9 @@ function Set-SmartsheetShare() {
     Param(
         [Parameter(
             Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true
+            ValueFromPipelineByPropertyName = $true            
         )]
+        [Alias("sheetId")]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$shareId,

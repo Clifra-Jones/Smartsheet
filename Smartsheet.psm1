@@ -5,7 +5,12 @@ using namespace System.Collections.Generic
     Object specific functions are in the ./public folder.
 #>
 
-$BaseURI = "https://api.smartsheet.com/2.0"
+#$BaseURI = "https://api.smartsheet.com/2.0"
+$Mimes = import-csv -Path "$PSScriptRoot/private/mimetypes.csv"
+$script:MimeTypes = [Dictionary[string,string]]::New()
+foreach ($mime in $mimes) {
+  $script:MimeTypes.Add($mime.Extension, $mime.MIMEType)
+}
 
 # dot source the following files.
 . $PSScriptRoot/private/private.ps1
@@ -15,6 +20,7 @@ $BaseURI = "https://api.smartsheet.com/2.0"
 . $PSScriptRoot/public/rows.ps1
 . $PSScriptRoot/public/sheets.ps1
 . $PSScriptRoot/public/shares.ps1
+. $PSScriptRoot/public/attachments.ps1
 
 
 # Setup Functions
@@ -49,11 +55,14 @@ function Set-SmartsheetAPIKey () {
 
 # End Setup Functions
 
+
+
 #Export Functions
 function Export-SmartSheet() {
     [CmdletBinding(DefaultParameterSetName = "none")]
     Param(
         [Parameter(
+            Mandatory = $true,
             ValueFromPipeline = $true
         )]
         [psobject]$InputObject,
@@ -67,13 +76,19 @@ function Export-SmartSheet() {
             "Rename"
         )]
         [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'exists2')]
         [string]$overwriteAction,
         [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
-        [string]$overwriteSheetId
+        [Parameter(ParameterSetName = 'exists2')]
+        [string]$overwriteSheetId,
+        [Parameter(ParameterSetName = 'exists')]
+        [switch]$overwriteIncludeAll,
+        [Parameter(ParameterSetName = 'exists2')]
+        [switch]$overwriteIncludeAttachments
     )
     
     Begin {
-        $Headers = Get-Headers -ContentType:text/csv -ContentDisposition:attachment
+        $Headers = Get-Headers -ContentType 'text/csv' -ContentDisposition 'attachment'
         $folderId = $null
         if ($folder) {
             if ($folder.Contains("/")) {                
@@ -126,10 +141,14 @@ function Export-SmartSheet() {
         $Headers.add("Content-Disposition", "attachment")
  #>        
         $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-        if (-not $response.message -eq "SUCCESS") {
+        if ($response.message -ne "SUCCESS") {
             Throw "Import failed! $($_.Exception.Message)"
         }
         else {
+            If ($overwriteIncludeAttachments -or $overwriteIncludeAll) {
+                copyAttachments -fromSheetId $id -toSheetId $response.result.id
+            }
+
             switch ($overwriteAction) {
                 "Replace" {
                     Remove-Smartsheet -Id $overwriteSheetId

@@ -152,12 +152,12 @@ function Get-Smartsheet () {
             }
         }
         $Sheet = Invoke-RestMethod -Method Get -Uri $Uri -Headers $Header
-        $toPsObject_Script = {
+        $ToArray_Script = {
             $psSheet = New-Object System.Collections.Generic.List[psobject]
-            foreach ($Row in $sheet.rows) {                
+            foreach ($Row in $this.rows) {                
                $Props = [ordered]@{}
                foreach ($Cell in $row.cells) {
-                    $PropName = $sheet.columns.Where({$_.id -eq $Cell.columnId}).title
+                    $PropName = $this.columns.Where({$_.id -eq $Cell.columnId}).title
                     $Props.Add($PropName, $Cell.value)                    
                 }
                 $_row = New-Object -TypeName psobject -Property $props
@@ -165,7 +165,7 @@ function Get-Smartsheet () {
             }
             return $psSheet.ToArray()
         }
-        $Sheet | Add-Member -MemberType ScriptMethod -Name ToPSObject -Value $toPsObject_Script
+        $Sheet | Add-Member -MemberType ScriptMethod -Name ToArray -Value $ToArray_Script
 
         return $Sheet
     }
@@ -227,6 +227,9 @@ function Get-Smartsheet () {
     contains cells in the specified columns.
     .PARAMETER rowIds
     A array of row Ids on which to filter the rows included in the result.
+    .OUTPUTS
+    A Smartsheet sheet object.
+    There is an added method named ToArray that returns the sheet as an array of PowerShell objects.
     #>
 }
 

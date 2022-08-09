@@ -1,3 +1,4 @@
+using namespace System.Collections.Generic
 $ServerInfo = @'
   {
     "fontFamilies": {
@@ -113,3 +114,4 @@ $ServerInfo = @'
 '@
 
 $global:SSFormat = $ServerInfo | ConvertFrom-Json
+
