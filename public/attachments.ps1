@@ -49,11 +49,7 @@ function Add-SmartsheetAttachment() {
             exit
         }
         $Headers = Get-Headers -ContentType $mimetype -ContentDisposition 'attachment' -filename $file.Fullname       
-<#         $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-        $headers.Add("Authorization", "Bearer VcjJj965oRo3E30PG1sXKkkvAFfFJhEhg5paj")
-        $headers.Add("Content-Type", $mimetype)
-        $headers.Add("Content-Disposition", "attachment; filename=`"CWilliams.docx`"")
- #>     $Uri = "{0}/sheets/{1}/attachments" -f $BaseURI, $id
+        $Uri = "{0}/sheets/{1}/attachments" -f $BaseURI, $id
         $body = [System.IO.File]::ReadAllBytes($path)
         #$config = Read-Config
         #$token = ConvertTo-SecureString -string $config.APIKey -AsPlainText -Force
