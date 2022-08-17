@@ -28,7 +28,7 @@ function Get-Smartsheet () {
         )]
         [string]$Name,
         [ValidateSet(0,1,2)]
-        [int]$level = 1,
+        [int]$level,
         [switch]$includeAll,
         [switch]$includeAttachments,
         [switch]$includeColumnTypes,

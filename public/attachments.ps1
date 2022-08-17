@@ -39,6 +39,8 @@ function Add-SmartsheetAttachment() {
         [string]$description,
         [string]$name
     )
+    
+    $Uri = "{0}/sheets/{1}/attachments" -f $BaseURI, $id
 
     if ($Path) {
         If (Test-Path -Path $Path) {
@@ -49,7 +51,6 @@ function Add-SmartsheetAttachment() {
             exit
         }
         $Headers = Get-Headers -ContentType $mimetype -ContentDisposition 'attachment' -filename $file.Fullname       
-        $Uri = "{0}/sheets/{1}/attachments" -f $BaseURI, $id
         $body = [System.IO.File]::ReadAllBytes($path)
         #$config = Read-Config
         #$token = ConvertTo-SecureString -string $config.APIKey -AsPlainText -Force
@@ -66,8 +67,10 @@ function Add-SmartsheetAttachment() {
         $Headers = Get-Headers
         $Properties = [ordered]@{
             attachmentType = $Type
-            attachmentSubType = $subType
-            Url = $url
+            url = $url
+        }
+        If ($Type -in 'EGNYTE','GOOGLE_DRIVE') {
+            $Properties.Add("attachmentSubType", $subType)
         }
         If ($description) { $Properties.Add('description', $description)}
         if ($name) { $Properties.Add('name', $name)}
@@ -75,17 +78,22 @@ function Add-SmartsheetAttachment() {
         $objBody = [PScustomObject]$properties
         $body = $objBody | ConvertTo-Json -Compress
 
-        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-        if ($response.message -eq "SUCCESS") {
-            return $response.result
-        } else {
-            return false
+        Try {
+            $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+            if ($response.message -eq "SUCCESS") {
+                return $response.result
+            } else {
+                return false
+            }
+        } catch {
+            Write-Host $response.message -ForegroundColor Red
+            exit
         }
     }
 } 
 
 function Get-SmartsheetAttachment() {
-    [CmdletBinding(DefaultParameterSetName = "saveas")]
+    [CmdletBinding(DefaultParameterSetName = 'default')]
     Param(
         [Parameter(
             Mandatory = $true,
@@ -95,10 +103,12 @@ function Get-SmartsheetAttachment() {
         [string]$id,
         [Parameter(
             Mandatory = $true
-        )]
+        )]        
         [string]$attachmentId,
-        [Parameter(Mandatory=$true, ParameterSetName = 'saveas')]
+        [Parameter(ParameterSetName = 'saveas')]
         [string]$saveAs,
+        [Parameter(ParameterSetName = 'bytes')]
+        [byte[]]$asByteArray
     )
     $Headers = Get-Headers -AutoOnly
     $Uri = "{0}/sheets/{1}/attachments/{2}" -f $BaseURI, $Id, $attachmentId
@@ -108,12 +118,14 @@ function Get-SmartsheetAttachment() {
         If ($asByteArray) {
             $webResponse = Invoke-WebRequest -Uri $response.url 
             return $webResponse.Content
-        } else {
+        } elseif ($saveAs) {
             [void](Invoke-WebRequest -Uri $response.url -OutFile $saveAs)
+        } else {
+            return $response
         }
     }
 }
-function Remove-SmartSheetAttachments() {
+function Remove-SmartSheetAttachment() {
     [CmdletBinding()]
     Param(
         [Parameter(
@@ -142,9 +154,9 @@ function Remove-SmartSheetAttachments() {
 function Copy-SmartsheetAttachments() {
     Param(
         [Parameter(Mandatory = $true)]
-        [string]$fromSheetId,
+        [string]$sourceSheetId,
         [Parameter(Mandatory = $true)]
-        [string]$toSheetId,
+        [string]$targetSheetId,
         [Parameter(Mandatory = $true)]
         [string]$tempDir        
     )
@@ -160,3 +172,76 @@ function Copy-SmartsheetAttachments() {
         }
     }
 }
+
+function New-SmartSheetCommentAttachment() {
+    [CmdletBinding()]
+    Param(
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sheetId')]
+        [string]$id,
+        [Parameter(Mandatory = $true)]
+        [string]$commentId,
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [string]$Url,
+        [ValidateSet("BOX_COM", "DROPBOX", "EGNYTE", "EVERNOTE", "FILE", "GOOGLE_DRIVE", "LINK", "ONEDRIVE")]
+        [string]$Type = "LINK",
+        [ValidateSet("DOCUMENT", "DRAWING", "FOLDER", "PDF", "PRESENTATION", "SPREADSHEET")]
+        [string]$subType = "DOCUMENT",
+        [string]$description,
+        [string]$name
+    )
+
+    $Uri = "{0}/sheets/{1}/comments/{2}/attachments" -f $BaseURI, $id, $commentId
+
+    if ($Path) {
+        if (Test-Path -Path $Path) {
+            $file = Get-ChildItem -Path $Path    
+            $mimetype = $mimetypes[$file.Extension]        
+        } else {
+            Write-Host "File not found!" -ForegroundColor Red
+            exit
+        }
+        $Headers = Get-Headers -ContentType $mimetype -ContentDisposition 'attachment' -filename $file.name
+        $body = [System.IO.File]::ReadAllBytes($Path)
+
+        try {
+            $response = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers -Body $body
+            if ($response.message -eq 'SUCCESS') {
+                return $respose.result
+            } else {
+                throw $response.message
+            }
+        } catch {
+            throw $_.Exception.Message
+        }
+    } else {
+        $Headers = Get-Headers
+        $payload = [ordered]@{
+            attachmentType = $Type
+            url = $url
+        }
+        if ($Type -in 'EGNYTE','GOOGLE_DRIVE') {
+            $payload.Add('attachmentSubType', $subType)
+        }
+        if ($description) { $payload.Add('description', $description)}
+        if ($name) { $payload.Add('name', $name)}
+
+        $body = $payload | ConvertTo-Json -Compress
+
+        try {
+            $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+            if ($response.message -eq 'SUCCESS') {
+                return $response.result
+            } else {
+                Throw $response.message
+            }
+        } catch {
+            throw $_.Exception.Message
+        }
+    }
+}
+

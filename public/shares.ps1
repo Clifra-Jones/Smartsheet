@@ -1,5 +1,5 @@
 function Add-SmartsheetShare() {
-    [CmdletBinding(DefaultParameterSetName = 'none')]
+    [CmdletBinding(DefaultParameterSetName = "default")]
     Param(
         [Parameter(
             Mandatory = $true,
@@ -11,13 +11,15 @@ function Add-SmartsheetShare() {
             "ADMIN","COMMENTER","EDITOR","EDITOR_SHARE","OWNER","VIEWER"
         )]
         [string]$accessLevel,
-        [Parameter(
-            Mandatory = $true
-        )]
+        [Parameter(ParameterSetName="sendmail'")]
         [switch]$sendEmail,
+        [Parameter(ParameterSetName="sendmail'")]
         [string]$email,
+        [Parameter(ParameterSetName="sendmail'")]
         [string]$subject,
+        [Parameter(ParameterSetName="sendmail'")]
         [string]$message,
+        [Parameter(ParameterSetName="sendmail'")]
         [switch]$ccMe
     )
 
@@ -233,4 +235,19 @@ function Set-SmartsheetShare() {
     .OUTPUTS
     Boolean indicating success or failure.
     #>
+}
+
+function Copy-SmartsheetShares() {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [string]$sourceSheetId,
+        [Parameter(Mandatory = $true)]
+        [string]$targetSheetId
+    )
+
+    $Shares = (Get-SmartsheetShares -Id $sourceSheetId).Where({$_.accessLevel -ne 'OWNER'})
+    foreach ($share in $shares) {
+        $targetSheetId | Add-SmartsheetShare -email $share.email -accessLevel $share.accessLevel
+    }
 }

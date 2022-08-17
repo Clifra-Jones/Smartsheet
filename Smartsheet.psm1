@@ -21,6 +21,7 @@ foreach ($mime in $mimes) {
 . $PSScriptRoot/public/sheets.ps1
 . $PSScriptRoot/public/shares.ps1
 . $PSScriptRoot/public/attachments.ps1
+. $PSScriptRoot/public/discussions.ps1
 
 
 # Setup Functions
@@ -84,7 +85,10 @@ function Export-SmartSheet() {
         [Parameter(ParameterSetName = 'exists')]
         [switch]$overwriteIncludeAll,
         [Parameter(ParameterSetName = 'exists2')]
-        [switch]$overwriteIncludeAttachments
+        [switch]$overwriteIncludeAttachments,
+        [Parameter(ParameterSetName = 'exists2')]
+        [switch]$overwriteIncludeShares
+
     )
     
     Begin {
@@ -145,22 +149,33 @@ function Export-SmartSheet() {
             Throw "Import failed! $($_.Exception.Message)"
         }
         else {
-            If ($overwriteIncludeAttachments -or $overwriteIncludeAll) {
-                copyAttachments -fromSheetId $id -toSheetId $response.result.id
-            }
-
-            switch ($overwriteAction) {
-                "Replace" {
-                    Remove-Smartsheet -Id $overwriteSheetId
+            if ($overwriteAction) {
+                $thisSheetId = $response.result.id
+                If ($overwriteIncludeAttachments -or $overwriteIncludeAll) {
+                    if ($IsLinux -or $IsMacOS) {
+                        $tempDir = "/tmp"
+                    } else {
+                        $tempDir = $env:TEMP
+                    }
+                    [void](Copy-SmartsheetAttachments -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId -tempDir $tempDir)
                 }
-                "Rename" {
-                    $sheetName = (Get-Smartsheet -id $overwriteSheetId).Name
-                    $strDate = Get-Date -Format "yyyyMMdd-HHmm"
-                    $newSheetName = "Copy Of_{0}_{1}" -f $SheetName, $strDate
-                    Rename-SmartSheet -Id $overwriteSheetId -newSheetName $newSheetName
+                if ($overwriteIncludeShares -or $overwriteIncludeAll) {
+                    [void](Copy-SmartsheetShares -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId)
                 }
+                
+                switch ($overwriteAction) {
+                    "Replace" {
+                        Remove-Smartsheet -Id $overwriteSheetId
+                    }
+                    "Rename" {
+                        $sheetName = (Get-Smartsheet -id $overwriteSheetId).Name
+                        $strDate = Get-Date -Format "yyyyMMdd-HHmm"
+                        $newSheetName = "Copy Of_{0}_{1}" -f $SheetName, $strDate
+                        Rename-SmartSheet -Id $overwriteSheetId -newSheetName $newSheetName
+                    }
+                }
+                $result = $response.result
             }
-            $result = $response.result
         }
         return $result
     }
