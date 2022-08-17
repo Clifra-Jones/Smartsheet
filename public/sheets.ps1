@@ -11,6 +11,14 @@ function Get-Smartsheets () {
     $response = Invoke-RestMethod -Method Get -Uri $Uri -Headers $Headers
 
     return $response.data
+    <#
+    .SYNOPSIS
+    Gets all smartsheet.
+    .DESCRIPTION
+    Gets an array of Smartsheet object associated the user has access to.
+    .OUTPUTS
+    AN array of Smartsheet objects.
+    #>
 }
 
 function Get-Smartsheet () {    
@@ -339,24 +347,28 @@ function Copy-Smartsheet() {
             $Uri = "{0}?exclude=" -f $Uri, "sheetHyperlinks"
         }
     }
-    $properties = @{}
+    $Payload = [ordered]@{}
     if ($containerId) {         
-        $properties.Add("destinationId", $containerId) 
-        $properties.Add("destinationType", $containerType)
+        $payload.Add("destinationId", $containerId) 
+        $payload.Add("destinationType", $containerType)
     } else {
-        $properties.Add("destinationType", $containerType)
+        $payload.Add("destinationType", $containerType)
     }
-    $properties.Add("newName", $newSheetName)
+    $payload.Add("newName", $newSheetName)
     
-    $psBody = [PSCustomObject]$properties
+    $body = $payload | ConvertTo-Json -Compress
 
-    $body = $psBody | ConvertTo-Json -Compress
-
-    $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message = "SUCCESS") {
-        if ($passThru) {
-            return Get-Smartsheet -sheetId $id
+    try{
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message = "SUCCESS") {
+            if ($passThru) {
+                return Get-Smartsheet -sheetId $id
+            }
+        } else {
+            throw $response.message
         }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS 
@@ -432,6 +444,7 @@ function Move-Smartsheet() {
         [Parameter(ParameterSetName = "container")]
         [string]$containerId,
         [Parameter(ParameterSetName = "container")]
+        [ValidateSet('folder','home','workspace')]
         [string]$containerType = "home"
     )
 
@@ -446,9 +459,13 @@ function Move-Smartsheet() {
     $objBody = [PSCustomObject]$properties
     $body = $objBody | ConvertTo-Json -Compress
 
-    $result = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-    if ($result.message -ne "SUCCESS") {
-        throw $result.message
+    try{
+        $result = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($result.message -ne "SUCCESS") {
+            throw $result.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -507,9 +524,11 @@ function Get-SortedSmartsheet() {
         $objBody = [PSCustomObject]$propreties
         $body = $objBody | ConvertTo-Json -Compress
     }
-
-    return Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-
+    try {
+        return Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+    } catch {
+        throw $_
+    }
     <#
     .SYNOPSIS
     Sort rows in a Smartsheet.
@@ -529,18 +548,18 @@ function Get-SortedSmartsheet() {
     Sheet object with the results of the sort operation.
     .EXAMPLE
     How to create a multi-sort sortCriteria object.
-    I this example we are going to sort a Smartsheet of employee salary information by Department and Salary in descending order.
+    In this example we are going to sort a Smartsheet of employee salary information by Department and Salary in descending order.
     To create the sort Criteria, 1st create an array.
     PS> $sortCriteria - @()
-    The create a criteria objects from the columns collection of a sheet object named $Sheet.
-    PS> $criteria - [PSCustomObject]@{
+    Then create a criteria objects from the columns collection of a sheet object named $Sheet.
+    PS> $criteria - @{
         columnId = $Sheet.columns.Where({$_.title -eq "Department"}).ColumnId
         direction = "ASCENDING"
     }
     Add this to the array.
     $sortCriteria += $criteria
     Create another criteria object
-    PS >$criteria = [PSCustomObject]@{
+    PS >$criteria = @{
         columnId = $Sheet.Columns.Where({$_,title -eq "Salary"}).ColumnId
         direction = "DESCENDING"
     }
@@ -603,11 +622,15 @@ function Send-SmartsheetViaEmail() {
 
     Process {
         $Uri = "{0}/sheets/{1}/emails" -f $BaseURI, $id
-        $result = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-        if ($result.message -eq "SUCCESS") {
-            return $true
-        } else {
-            return $false
+        try {
+            $result = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+            if ($result.message -eq "SUCCESS") {
+                return $true
+            } else {
+                return $false
+            }
+        } catch {
+            throw $_
         }
     }
     <#

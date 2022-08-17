@@ -1,6 +1,6 @@
 using namespace System.Collections.Generic
 
-function Add-SmartsheetRow() {
+function New-SmartsheetRow() {
     [CmdletBinding(DefaultParameterSetName = "props")]
     Param(
         [Parameter(
@@ -63,13 +63,9 @@ function Add-SmartsheetRow() {
         [Parameter(ParameterSetName = 'above')]
         [Parameter(ParameterSetName = 'below')]
         [string]$format,
-        [Parameter(
-            Mandatory = $true,    
-            ParameterSetName = 'props'
-        )]
-        [Parameter(Mandatory = $true, ParameterSetName = 'top')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'above')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'below')]
+        [Parameter(ParameterSetName = 'top')]
+        [Parameter(ParameterSetName = 'above')]
+        [Parameter(ParameterSetName = 'below')]
         [psobject[]]$cells,
         [Parameter(ParameterSetName = 'props')]
         [Parameter(ParameterSetName = 'top')]
@@ -94,23 +90,21 @@ function Add-SmartsheetRow() {
     if ($Row) {
         $body = $Row | ConvertTo-Json -Compress
     } else {
-        $properties = @{}
+        $payload = [ordered]@{}
         if ($top) { 
-            $properties.Add("toTop", $true)
+            $payload.Add("toTop", $true)
         }elseif ($aboveRow) {
-            $properties.Add("siblingId". $aboveRow)
-            $properties.Add("above", $true)
+            $payload.Add("siblingId". $aboveRow)
+            $payload.Add("above", $true)
         } elseIf($belowRow) {
-            $properties.Add("sibling", $belowRow)
+            $payload.Add("sibling", $belowRow)
         }
-        if ($expanded) { $properties.Add("Expamded", $expanded)}
-        if ($format) { $properties.Add("format", $format) }
-        if ($locked) { Properties.Add("locked", $locked )}
-        If ($cells) {$properties.Add("cells", $cells)}
-
-        $row = [psCustomObject]$properties
+        if ($expanded) { $payload.Add("Expamded", $expanded)}
+        if ($format) { $payload.Add("format", $format) }
+        if ($locked) { $payload.Add("locked", $locked )}
+        If ($cells) {$payload.Add("cells", $cells)}
         
-        $body = $Row | ConvertTo-Json -Compress
+        $body = $payload | ConvertTo-Json -Compress
     }
     $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
     if ($response.message -eq "SUCCESS") {
@@ -146,7 +140,7 @@ function Add-SmartsheetRow() {
     #>
 }
 
-function Add-SmartsheetRows() {
+function New-SmartsheetRows() {
     Param(
         [Parameter(
             Mandatory = $true
@@ -296,20 +290,23 @@ function Set-SmartsheetRow() {
     if ($Row) {
         $body = $Row | ConvertTo-Json -Compress
     } else {
-        $properties = [ordered]@{}
-        if ($expanded) { $properties.Add("expanded", $expanded) }
-        if ($format) { $properties.Add("format", $format) }
-        if ($locked) { $properties.Add("locked", $locked) }
-        If ($Cells) { $properties.Add("Cells", $Cells)}
-        $Row = [psCustomObject]$properties
-        $body = $Row | ConvertTo-Json -Compress
+        $payload = [ordered]@{}
+        if ($expanded) { $payload.Add("expanded", $expanded) }
+        if ($format) { $payload.Add("format", $format) }
+        if ($locked) { $payload.Add("locked", $locked) }
+        If ($Cells) { $Payload.Add("Cells", $Cells)}        
+        $body = $payload | ConvertTo-Json -Compress
     }
     
-    $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message -eq "SUCCESS") {
-        return $true
-    } else {
-        retuen $false
+    try {
+        $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq "SUCCESS") {
+            return $response.result
+        } else {
+            throw $response.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -348,11 +345,15 @@ function Set-SmartsheetRows() {
 
     $body = $Rows | ConvertTo-Json -Compress
 
-    $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message -eq "SUCCESS") {
-        return $true
-    } else {
-        return $false
+    try {
+        $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq "SUCCESS") {
+            return $response.result
+        } else {
+            throw $response.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -384,10 +385,13 @@ function Get-SmartsheetRow() {
     if ($includeColumns) {
         $Uri = $Uri + "?include=columns"
     }
+    try {
+        $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers 
 
-    $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers 
-
-    return $response
+        return $response
+    } catch {
+        throw $_
+    }
     <#
     .SYNOPSIS
     retrieve a Smartsheet row.
@@ -413,7 +417,6 @@ function Export-SmartsheetRows() {
         [psobject]$InputObject,
         [Parameter(Mandatory = $true)]
         [string]$sheetId,
-        [string]$parentRowId,
         [switch]$blankRowAbove,
         [string]$title,
         [string]$titleFormat,
@@ -426,12 +429,7 @@ function Export-SmartsheetRows() {
         $Columns = Get-SmartsheetColumns -SheetId $sheetId   
 
         if ($blankRowAbove) {
-            $cells = @()
-            foreach ($column in $columns) {
-                $cell = New-SmartsheetCell -columnId $column.id
-                $cells += $cell
-            }
-            [void](Add-SmartsheetRow -sheetId $sheetId -cells $cells)
+            [void](Add-SmartsheetRow -sheetId $sheetId)
         }
 
         if ($title) {
@@ -476,4 +474,29 @@ function Export-SmartsheetRows() {
         }
         [void](Add-SmartsheetRow -Id $sheetId -cells $cells)
     }
+
+    <#
+    .SYNOPSIS
+    Export an array and appends to a smartsheet.
+    .DESCRIPTION
+    Exports a Powershell array and appends new rows to a smartsheet.
+    If no columns ecist in the smartsheet they are created as generic Columns, i.e. Column1, Column2.    
+    To generate a smartsheet with named columns from the objects of the array use Export-Smartsheet.
+    .PARAMETER InputObject
+    An array of Powershell objects.
+    .PARAMETER sheetId
+    The Smartsheet ID to put the data in.
+    .PARAMETER blankRowAbove
+    INsert a blank row above the data being exported.
+    .PARAMETER title
+    Insert a title row above the data.
+    .PARAMETER titleFormat
+    A Smartsheet format string for the title. To create a format string use New-SmartsheetFormatString.
+    .PARAMETER includeHeaders
+    Create a header row from the property names from the objects in the array.
+    .PARAMETER headerFormat
+    A Smartsheet format string for the headers. To create a format string use New-SmartsheetFormatString.
+    .OUTPUTS
+    Nothing
+    #>
 }

@@ -22,6 +22,7 @@ foreach ($mime in $mimes) {
 . $PSScriptRoot/public/shares.ps1
 . $PSScriptRoot/public/attachments.ps1
 . $PSScriptRoot/public/discussions.ps1
+. $PSScriptRoot/public/images.ps1
 
 
 # Setup Functions
@@ -60,7 +61,7 @@ function Set-SmartsheetAPIKey () {
 
 #Export Functions
 function Export-SmartSheet() {
-    [CmdletBinding(DefaultParameterSetName = "none")]
+    [CmdletBinding(DefaultParameterSetName = "default")]
     Param(
         [Parameter(
             Mandatory = $true,
@@ -91,94 +92,86 @@ function Export-SmartSheet() {
 
     )
     
-    Begin {
-        $Headers = Get-Headers -ContentType 'text/csv' -ContentDisposition 'attachment'
-        $folderId = $null
-        if ($folder) {
-            if ($folder.Contains("/")) {                
-                # Get an object that contains a nested list of objects & folders.
-                $Uri = "{0}/home" -f $BaseURI
-                $rootfolders = Get-SmartsheetHome
-                # Split the folder path into its parts.
-                $Folders = $folder.Split("/")
-                $currentFolder = $rootfolders
-                $folders | ForEach-Object {
-                    $currentFolder = $currentFolder.Where($_.Name -eq $_)                        
-                }
-                #$FolderId = $currentFolder.Id
+    $Headers = Get-Headers -ContentType 'text/csv' -ContentDisposition 'attachment'
+    $folderId = $null
+    if ($folder) {
+        if ($folder.Contains("/")) {                
+            # Get an object that contains a nested list of objects & folders.
+            $Uri = "{0}/home" -f $BaseURI
+            $rootfolders = Get-SmartsheetHome
+            # Split the folder path into its parts.
+            $Folders = $folder.Split("/")
+            $currentFolder = $rootfolders
+            $folders | ForEach-Object {
+                $currentFolder = $currentFolder.Where($_.Name -eq $_)                        
             }
-            else {
-                #get a folder off the root
-                $rootfolders = Get-SmartsheetHomeFolders
-                $currentFolder = $folders.Where({ $_.name -eq $Folder })
-            }
-            $folderId = $currentFolder.Id
+            #$FolderId = $currentFolder.Id
         }
-        $ArList = [System.Collections.Generic.List[psobject]]::New()
-    }
-    Process {
-        $ArList.Add($inputObject)
+        else {
+            #get a folder off the root
+            $rootfolders = Get-SmartsheetHomeFolders
+            $currentFolder = $folders.Where({ $_.name -eq $Folder })
+        }
+        $folderId = $currentFolder.Id
     }
 
-    End {
-        # convert input to csv
-        $ArInput = $ArList.ToArray()
-        $inputCsv = $ArInput | ConvertTo-Csv
-        $inputString = $inputCsv | Out-String
-        $encoder = New-Object System.Text.UTF8Encoding
-        $body = $encoder.GetBytes($inputString)
-        If ($FolderId) {
-            $Uri = "{0}/folders/{1}/sheets/import?sheetName={2}" -f $BaseURI, $folderId, $SheetName
-        }
-        else {
-            $Uri = "{0}/sheets/import?sheetName={1}" -f $BaseURI, $SheetName
-        }
-        if ($headerRow -ge 0) {
-            $Uri = "{0}&headerRowIndex={1}" -f $Uri, $headerRow
-        }
-        if ($PrimaryColumn) {
-            $Uri = "{0}&primaryColumnIndex={1}" -f $Uri, $PrimaryColumn
-        }
-<#      
-        $Headers.Remove("Content-Type")
-        $Headers.Add("Content-Type", "text/csv")
-        $Headers.add("Content-Disposition", "attachment")
- #>        
-        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-        if ($response.message -ne "SUCCESS") {
-            Throw "Import failed! $($_.Exception.Message)"
-        }
-        else {
-            if ($overwriteAction) {
-                $thisSheetId = $response.result.id
-                If ($overwriteIncludeAttachments -or $overwriteIncludeAll) {
-                    if ($IsLinux -or $IsMacOS) {
-                        $tempDir = "/tmp"
-                    } else {
-                        $tempDir = $env:TEMP
-                    }
-                    [void](Copy-SmartsheetAttachments -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId -tempDir $tempDir)
-                }
-                if ($overwriteIncludeShares -or $overwriteIncludeAll) {
-                    [void](Copy-SmartsheetShares -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId)
-                }
-                
-                switch ($overwriteAction) {
-                    "Replace" {
-                        Remove-Smartsheet -Id $overwriteSheetId
-                    }
-                    "Rename" {
-                        $sheetName = (Get-Smartsheet -id $overwriteSheetId).Name
-                        $strDate = Get-Date -Format "yyyyMMdd-HHmm"
-                        $newSheetName = "Copy Of_{0}_{1}" -f $SheetName, $strDate
-                        Rename-SmartSheet -Id $overwriteSheetId -newSheetName $newSheetName
-                    }
-                }
-                $result = $response.result
-            }
-        }
-        return $result
+    # convert input to csv        
+    $inputCsv = $input | ConvertTo-Csv
+    $inputString = $inputCsv | Out-String
+    $encoder = New-Object System.Text.UTF8Encoding
+    $body = $encoder.GetBytes($inputString)
+    If ($FolderId) {
+        $Uri = "{0}/folders/{1}/sheets/import?sheetName={2}" -f $BaseURI, $folderId, $SheetName
     }
+    else {
+        $Uri = "{0}/sheets/import?sheetName={1}" -f $BaseURI, $SheetName
+    }
+    if ($headerRow -ge 0) {
+        $Uri = "{0}&headerRowIndex={1}" -f $Uri, $headerRow
+    }
+    if ($PrimaryColumn) {
+        $Uri = "{0}&primaryColumnIndex={1}" -f $Uri, $PrimaryColumn
+    }
+<#      
+    $Headers.Remove("Content-Type")
+    $Headers.Add("Content-Type", "text/csv")
+    $Headers.add("Content-Disposition", "attachment")
+#>        
+    $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+    if ($response.message -ne "SUCCESS") {
+        Throw "Import failed! $($_.Exception.Message)"
+    }
+    else {
+        if ($overwriteAction) {
+            $thisSheetId = $response.result.id
+            If ($overwriteIncludeAttachments -or $overwriteIncludeAll) {
+                if ($IsLinux -or $IsMacOS) {
+                    $tempDir = "/tmp"
+                } else {
+                    $tempDir = $env:TEMP
+                }
+                [void](Copy-SmartsheetAttachments -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId -tempDir $tempDir)
+            }
+            if ($overwriteIncludeShares -or $overwriteIncludeAll) {
+                [void](Copy-SmartsheetShares -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId)
+            }
+            
+            switch ($overwriteAction) {
+                "Replace" {
+                    Remove-Smartsheet -Id $overwriteSheetId
+                }
+                "Rename" {
+                    $sheetName = (Get-Smartsheet -id $overwriteSheetId).Name
+                    $strDate = Get-Date -Format "yyyyMMdd-HHmm"
+                    $newSheetName = "Copy Of_{0}_{1}" -f $SheetName, $strDate
+                    Rename-SmartSheet -Id $overwriteSheetId -newSheetName $newSheetName
+                }
+            }
+            $result = $response.result
+        }
+    }
+    return $result
+
     <#
         .SYNOPSIS
         Exports a powershell array into a new Smartsheet.

@@ -52,9 +52,8 @@ function Get-Headers() {
     }
 
     if ($ContentDisposition) {
-        if ($filename) {
-            $file = Get-Item $filename            
-            $ContentDisposition += "; filename=`"{0}`"" -f $file.Name
+        if ($filename) {        
+            $ContentDisposition += "; filename=`"{0}`"" -f $filename
             $Headers.Add('Content-Disposition', $ContentDisposition)        
             #$Headers.Add("Content-Length", $size)
         } else {

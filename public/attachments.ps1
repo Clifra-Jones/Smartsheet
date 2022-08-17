@@ -19,6 +19,14 @@ function Get-SmartsheetAttachments() {
         Write-Host $ErrorDetails.Message -ForegroundColor Red
         exit
     }
+    <#
+    .SYNOPSIS
+    Get a Smartsheet Attachment.
+    .PARAMETER id
+    Smartsheet Id.
+    .OUTPUTS
+    An array of Smartsheet attachment objects.
+    #>
 } 
 
 function Add-SmartsheetAttachment() {
@@ -50,19 +58,21 @@ function Add-SmartsheetAttachment() {
             Write-Host "File not found!" -ForegroundColor Red
             exit
         }
-        $Headers = Get-Headers -ContentType $mimetype -ContentDisposition 'attachment' -filename $file.Fullname       
+        $Headers = Get-Headers -ContentType $mimetype -ContentDisposition 'attachment' -filename $file.name       
         $body = [System.IO.File]::ReadAllBytes($path)
         #$config = Read-Config
         #$token = ConvertTo-SecureString -string $config.APIKey -AsPlainText -Force
-        $response = Invoke-RestMethod -Method 'POST' -Uri $Uri -Headers $Headers -Body $body
-        
+        try {
+            $response = Invoke-RestMethod -Method 'POST' -Uri $Uri -Headers $Headers -Body $body
 
-        if ($response.message -eq "SUCCESS") {
-            return $response.result
-        } else {
-            return $false
+            if ($response.message -eq "SUCCESS") {
+                return $response.result
+            } else {
+                throw $response.message
+            }
+        } catch {
+            throw $_
         }
-
     } else {
         $Headers = Get-Headers
         $Properties = [ordered]@{
@@ -83,13 +93,34 @@ function Add-SmartsheetAttachment() {
             if ($response.message -eq "SUCCESS") {
                 return $response.result
             } else {
-                return false
+                throw $response.message
             }
         } catch {
-            Write-Host $response.message -ForegroundColor Red
-            exit
+            throw $_
         }
     }
+    <#
+    .SYNOPSIS
+    Ads a attachment to a Smartsheet.
+    .DESCRIPTION
+    Add either a file attachment or a URL attachment. URLs can point to links or cloud service files/folders.
+    .PARAMETER Id
+    Smartsheet Id.
+    .PARAMETER Path
+    Path to the file to attach.
+    .PARAMETER Url
+    URL to the cloud based resource.
+    .PARAMETER Type
+    The type of URL.
+    .PARAMETER subType
+    Subtype of URL. Only valid for EGNYTE and GOOGLE_DRIVE types.
+    .PARAMETER description
+    A description of the attachment.
+    .PARAMETER name
+    The name of the attachment.
+    .OUTPUTS
+    A Smartsheet attachment object.
+    #>
 } 
 
 function Get-SmartsheetAttachment() {
@@ -124,6 +155,24 @@ function Get-SmartsheetAttachment() {
             return $response
         }
     }
+    <#
+    .SYNOPSIS
+    Get a Smartsheet Attachment.
+    .DESCRIPTION
+    Gets s specific attachment to a Smartsheet.
+    .PARAMETER id
+    The Smartsheet Id
+    .PARAMETER attachmentId
+    The attachment Id.
+    .PARAMETER saveAs
+    Path and filename to save the attachment to.
+    .PARAMETER asByteArray
+    Returns the attachment as a byte array.
+    .OUTPUTS
+    If -saveAs and -asByteArray are not specified returns a smartsheet attachment object.
+    if -saveAs ia specified returns nothing.
+    if -asByteArray is specified an array of bytes is returned.
+    #>
 }
 function Remove-SmartSheetAttachment() {
     [CmdletBinding()]
@@ -149,6 +198,16 @@ function Remove-SmartSheetAttachment() {
     } else {
         return $false
     }
+    <#
+    .SYNOPSIS
+    Removed a Smartsheet attachment
+    .PARAMETER Id
+    The Smartsheet Id.
+    .PARAMETER attachmentId
+    The attachment Id.
+    .OUTPUTS
+    Boolean indicating success of failure. True = success.
+    #>
 }
 
 function Copy-SmartsheetAttachments() {
@@ -171,6 +230,18 @@ function Copy-SmartsheetAttachments() {
             Remove-Item $outfile
         }
     }
+    <#
+    .SYNOPSIS
+    Copies Smartsheet attachments.
+    .DESCRIPTION
+    Copies all Smartsheet attachments from one sheet to another.
+    .PARAMETER sourceSheetId
+    The source Smartsheet Id.
+    .PARAMETER targetSheetId
+    The Target Smartsheet Id.
+    .PARAMETER tempDir
+    The temporary directory to save the files to. (Linux/Mac = /tmp, Windows = TEMP environment variable.)
+    #>
 }
 
 function New-SmartSheetCommentAttachment() {
@@ -243,5 +314,29 @@ function New-SmartSheetCommentAttachment() {
             throw $_.Exception.Message
         }
     }
+    <#
+    .SYNOPSIS
+    Create a smartsheet comment attachment.
+    .DESCRIPTION
+    Create an attachment tied to a Smartsheet comment.
+    .PARAMETER id
+    The Smartsheet Id.
+    .PARAMETER commentId
+    The Smartsheet Comment Id.
+    .PARAMETER Path
+    The path to the file to attach.
+    .PARAMETER Url
+    A url to a cloud resource.
+    .PARAMETER Type
+    The type of Url.
+    .PARAMETER subType
+    The URL subtype. Only cvalid for EGNYTE and GOOGLE_DRIVE types.
+    .PARAMETER description
+    The description of the URL.
+    .PARAMETER name
+    The name of the Url.
+    .OUTPUTS
+    A Smartsheet attachment object.
+    #>
 }
 

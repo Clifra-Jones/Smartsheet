@@ -250,4 +250,14 @@ function Copy-SmartsheetShares() {
     foreach ($share in $shares) {
         $targetSheetId | Add-SmartsheetShare -email $share.email -accessLevel $share.accessLevel
     }
+    <#
+    .SYNOPSIS
+    Copies shares from one sheet to another.
+    .DESCRIPTION
+    Copies the shares from one Smartsheet to another smartsheet.
+    .PARAMETER sourceSheetId
+    The source Smartsheet Id.
+    .PARAMETER targetSheetId
+    The Target Smartsheet Id
+    #>
 }

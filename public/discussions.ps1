@@ -32,12 +32,25 @@ function Get-SmartsheetDiscussions() {
 
     try {
         $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
+        return $response.data   
     } catch {
-        $ErrorDetails = $_.ErrorDetails | ConvertFrom-Json
-        Write-Host $ErrorDetails.Message -ForegroundColor Red
-        exit
+        throw $_
     }
-    return $response.data
+    <#
+    .SYNOPSIS
+    Get Smartsheet Discussions
+    .DESCRIPTION 
+    Gets all Discussions attached to the Smartsheet. 
+    Returns both Sheet level and Row level discussions.
+    .PARAMETER Id
+    The Smartsheet Id
+    .PARAMETER includeAllComments
+    Include all comments. By default only the Discussion objects are returned.
+    .PARAMETER includeAttachments
+    Include all attachment. By default only the Discussion objects are returned.
+    .OUTPUTS
+    A Smartsheet discussion object.
+    #>
 }
 
 function Get-SmartsheetDiscussion() {
@@ -63,6 +76,16 @@ function Get-SmartsheetDiscussion() {
     } catch {
         Write-Host $_.Exception.Message -ForegroundColor Red
     }
+    <#
+    .SYNOPSIS
+    Get a smartsheet Discussion
+    .PARAMETER Id
+    The Smartsheet Id.
+    .PARAMETER discussionId
+    The discussion Id.
+    .OUTPUTS
+    A smartsheet Discussion object.
+    #>
 }
 
 function New-SmartsheetDiscussion() {
@@ -75,54 +98,43 @@ function New-SmartsheetDiscussion() {
         [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$text,
-        [PSObject]$Path
+        [string]$text
     )
     $Headers = Get-Headers -AuthOnly
     $uri = "{0}/sheets/{1}/discussions" -f $BaseURI, $id
 
-    If ($Path) {
-        $Headers.Add("Content-Type", "multipart/form-data")
-        [byte[]]$file = [System.IO.File]::ReadAllBytes($Path)
-        $payload = [ordered]@{
-            discussion = [ordered]@{
-                comment = @{
-                    text = $text
-                }
-            }
-            file = $file
-        }
-        $body = $payload | ConvertTo-Json
-        try {
-            $response = Invoke-RestMethod -Method Post -Uri $Uri -Headers $Headers -body $form
-            if ($response.message -eq "SUCCESS") {
-                return $response
-            } else {
-                return $response
-            }
-        } catch {
-            throw $_.ErrorDetails.Message
-        }
-    } else {
-        $Headers.Add("Content-Type", "application/json")
-        $payload = [ordered]@{
-            comment = @{
-                text = $text
-            }
-        }
-        $body = $payload | ConvertTo-Json
-        try {
-            $response = Invoke-RestMethod -Method Post -Uri $Uri -Headers $Headers -Body $body
-            if ($response.message -eq "SUCCESS") {
-                return $response.result
-            } else {
-                return $response.message
-            }
-        } catch {
-            Write-Host $_.ErrorDetails.Message -ForegroundColor Red
-            return
+    $Headers.Add("Content-Type", "application/json")
+    $payload = [ordered]@{
+        comment = @{
+            text = $text
         }
     }
+    $body = $payload | ConvertTo-Json
+    try {
+        $response = Invoke-RestMethod -Method Post -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq "SUCCESS") {
+            return $response.result
+        } else {
+            return $response.message
+        }
+    } catch {
+        Write-Host $_.ErrorDetails.Message -ForegroundColor Red
+        return
+    }
+
+    <#
+    .SYNOPSIS
+    Create a new Smartsheet discussion.
+    .DESCRIPTION
+    Creates a new discussion at the sheet level.
+    To attach a file or URL to the comment use the New-SmartsheetCommentAttachment function.
+    .PARAMETER Id
+    The smartsheet Id.
+    .PARAMETER text
+    The text of the comment.
+    .OUTPUTS    
+    A Smartsheet Discussion object.
+    #>
 }
 
 function Remove-SmartsheetDiscussion() {
@@ -153,6 +165,18 @@ function Remove-SmartsheetDiscussion() {
         Write-Host $_.Exception.Message -ForegroundColor Red
         return $false
     }
+    <#
+    .SYNOPSIS
+    Remove a Smartsheet discussion.
+    .DESCRIPTION
+    Removes a discussion from a smartsheet. This will remove all comments and attachments.
+    .PARAMETER id
+    The Smartshett Id.
+    .PARAMETER discussionId
+    The discussion Id.
+    .OUTPUTS
+    Boolean indicating success of failure. True = success.
+    #>
 }
 
 function Get-SmartsheetRowDiscussions() {
@@ -183,7 +207,7 @@ function Get-SmartsheetRowDiscussions() {
     }
     if ($includes.Length -gt 0) {
         $strIncludes = $includes -join ","
-        $uri = "{0}?include={1}" -f $strIncludes
+        $uri = "{0}?include={1}" -f $Uri, $strIncludes
     }
 
     try{
@@ -192,9 +216,25 @@ function Get-SmartsheetRowDiscussions() {
     } catch {
         throw $_.Exception.message
     }
+    <#
+    .SYNOPSIS
+    Get Smartsheet row discussions
+    .DESCRIPTION
+    Gets discussions attached to a row.
+    .PARAMETER id
+    The Smartsheet Id.
+    .PARAMETER rowId
+    The Row id.
+    .PARAMETER includeComments
+    Include comments. By default only the discussion objects are returned.
+    .PARAMETER includeAttachments
+    include attachments. By default only the discussion objects are returned.
+    .OUTPUTS
+    A smartsheet discussion object.
+    #>
 }
 
-function New-SMartsheetRowDiscussion() {
+function New-SmartsheetRowDiscussion() {
     [CmdletBinding()]
     Param(
         [Parameter(
@@ -206,47 +246,40 @@ function New-SMartsheetRowDiscussion() {
         [Parameter(Mandatory = $true)]
         [string]$rowId,
         [Parameter(Mandatory=$true)]
-        [string]$text,
-        [string]$Path
+        [string]$text
     )
 
     $Uri = "{0}/sheets/{1}/rowes/{2}/discussions" -f $BaseURI, $id, $rowId
 
-    if ($Path) {
-        $Headers = Get-Headers -ContentType "multipart/form-data"        
-
-        $form = @{
-            discussion = @{
-                comment = @{
-                    text = $text                    
-                }
-                type = "application/json"
-            }
-            file = Get-Item -Path $Path
-            type = "multipart/form-data"
-        }
-
-        try {
-            Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Form $form
-            return $response
-        } catch {
-            throw $_.Exception.Message
-        }
-    } else {
-        $Headers = Get-Headers
-        $payload = @{
-            comment = @{
-                text = $text
-            }
-        }
-
-        try {
-            $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers -Body $payload
-            return $response
-        } catch {
-            throw $_.Exception.Message
+    $Headers = Get-Headers
+    $payload = @{
+        comment = @{
+            text = $text
         }
     }
+
+    try {
+        $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers -Body $payload
+        return $response
+    } catch {
+        throw $_.Exception.Message
+    }
+
+    <#
+    .SYNOPSIS
+    Creates a new Smartsheet row discussion.
+    .DESCRIPTION
+    Creates a discussion on the specified row.
+    To attach a file or URL to a comment use the New-SmartsheetCommentAttachment function.
+    .PARAMETER id
+    The smartsheet Id.
+    .PARAMETER rowId
+    The Row Id.
+    .PARAMETER text
+    The text of the comment.
+    .OUTPUTS
+    A smartsheet discussion object.
+    #>
 }
 
 # Comment functions.
@@ -273,6 +306,16 @@ function Get-SmartSheetComment() {
     } catch {
         throw $_.Exception.Message
     }
+    <#
+    .SYNOPSIS 
+    Gets a smartsheet discussion comment
+    .PARAMETER Id
+    The smartsheet Id.
+    .PARAMETER commentId
+    The comment Id.
+    .OUTPUTS
+    A smartsheet comment object
+    #>
 }
 
 function Set-SmartSheetComment() {
@@ -309,6 +352,20 @@ function Set-SmartSheetComment() {
     } catch {
         throw $_.Exception.Message
     }
+    <#
+    .SYNOPSIS
+    Updates a smartsheet comment.
+    .DESCRIPTION
+    Updates the text of a Smartsheet comment. Only the owner of the comment can update the text.
+    .PARAMETER Id
+    The Smartsheet Id.
+    .PARAMETER commentId
+    The Command d.
+    .PARAMETER text
+    The updated text for the comment.
+    .OUTPUTS
+    A smartsheet comment object
+    #>
 }
 
 function Remove-SmartsheetComment() {
@@ -326,7 +383,7 @@ function Remove-SmartsheetComment() {
 
     $Headers = Get-Headers -AuthOnly
 
-    $Uri = "{0}/sheets/{1}/comments/{2}" -f $BaseId, $Id, $commentId
+    $Uri = "{0}/sheets/{1}/comments/{2}" -f $BaseURI, $Id, $commentId
 
     try {
         $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
@@ -338,6 +395,16 @@ function Remove-SmartsheetComment() {
     } catch {
         throw $_.Exception.Message
     }
+    <#
+    .SYNOPSIS
+    Remove a smartsheet comment.
+    .PARAMETER Id
+    The smartsheet Id.
+    .PARAMETER commentId
+    The comment Id.
+    .OUTPUTS
+    Boolean indicating success of failure. True = success.
+    #>
 }
 
 function New-SmartsheetComment() {
@@ -374,4 +441,16 @@ function New-SmartsheetComment() {
     } catch {
         throw $_.Exception.Message
     }
+    <#
+    .SYNOPSIS
+    Adds a new comment to a smartsheet discussion.
+    .PARAMETER Id
+    The Smartsheet Id.
+    .PARAMETER discussionId
+    The discussion Id.
+    .PARAMETER text
+    The test of the new comment.
+    .OUTPUTS
+    A smartsheet comment object.
+    #>
 }
