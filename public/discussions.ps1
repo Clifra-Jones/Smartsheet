@@ -454,3 +454,26 @@ function New-SmartsheetComment() {
     A smartsheet comment object.
     #>
 }
+
+function Copy-SmartsheetDiscussions() {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [string]$sourceSheetId,
+        [Parameter(Mandatory = $true)]
+        [string]$targetSheetId
+    )
+
+    # Get the source Discussions
+    $sourceDiscussions = Get-SmartsheetDiscussions -sheetId $sourceSheetId -includeAllComments
+
+    # Process the Sheet level dicussions 1st.
+    $sourceSheetDiscussions = $sourceDiscussions.Where({$_.parentType -eq 'SHEET'})
+    foreach ($sourceSheetDiscussion in $sourceSheetDiscussions) {
+        $newDiscussion = New-SmartsheetDiscussion -sheetId $targetSheetId -text $sourceSheetDiscussion.title
+        # Process the comments.
+        foreach ($comment in $sourceSheetDiscussions.comments | Select-Object -Skip 1) {
+            [void](New-SmartsheetComment -sheetId $targetSheetId -discussionId $newDiscussion.id -text $comment.text)
+        }        
+    }
+}

@@ -14,6 +14,7 @@ foreach ($mime in $mimes) {
 
 # dot source the following files.
 . $PSScriptRoot/private/private.ps1
+. $PSScriptRoot/public/images.ps1
 . $PSScriptRoot/public/objects.ps1
 . $PSScriptRoot/public/columns.ps1
 . $PSScriptRoot/public/containers.ps1
@@ -22,8 +23,7 @@ foreach ($mime in $mimes) {
 . $PSScriptRoot/public/shares.ps1
 . $PSScriptRoot/public/attachments.ps1
 . $PSScriptRoot/public/discussions.ps1
-. $PSScriptRoot/public/images.ps1
-
+. $PSScriptRoot/public/search.ps1
 
 # Setup Functions
 function Set-SmartsheetAPIKey () {
@@ -82,13 +82,7 @@ function Export-SmartSheet() {
         [string]$overwriteAction,
         [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
         [Parameter(ParameterSetName = 'exists2')]
-        [string]$overwriteSheetId,
-        [Parameter(ParameterSetName = 'exists')]
-        [switch]$overwriteIncludeAll,
-        [Parameter(ParameterSetName = 'exists2')]
-        [switch]$overwriteIncludeAttachments,
-        [Parameter(ParameterSetName = 'exists2')]
-        [switch]$overwriteIncludeShares
+        [string]$overwriteSheetId
 
     )
     
@@ -142,21 +136,13 @@ function Export-SmartSheet() {
         Throw "Import failed! $($_.Exception.Message)"
     }
     else {
-        if ($overwriteAction) {
-            $thisSheetId = $response.result.id
-            If ($overwriteIncludeAttachments -or $overwriteIncludeAll) {
-                if ($IsLinux -or $IsMacOS) {
-                    $tempDir = "/tmp"
-                } else {
-                    $tempDir = $env:TEMP
-                }
-                [void](Copy-SmartsheetAttachments -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId -tempDir $tempDir)
-            }
-            if ($overwriteIncludeShares -or $overwriteIncludeAll) {
-                [void](Copy-SmartsheetShares -sourceSheetId $overwriteSheetId -targetSheetId $thisSheetId)
-            }
-            
-            switch ($overwriteAction) {
+        if ($overwriteAction) {       
+            $newSheetid = $response.result.id
+            Copy-SmartsheetShares -sourceSheetId $overwriteSheetId -targetSheetId $newSheetid
+            Copy-SmartsheetAttachments -sourceSheetId $overwriteSheetId -targetSheetId $newSheetid
+            Copy-SmartsheetDiscussions -sourceSheetId $overwriteSheetId -targetSheetId $newSheetid
+
+            switch ($overwriteAction) {                
                 "Replace" {
                     Remove-Smartsheet -Id $overwriteSheetId
                 }
@@ -177,7 +163,7 @@ function Export-SmartSheet() {
         Exports a powershell array into a new Smartsheet.
 
         .DESCRIPTION 
-        Exports an array of PSObjects into a smartsheet. This function will always create a new sheet even if
+        Exports an array of PSObjects into a new smartsheet. This function will always create a new sheet even if
         there is a sheet of the same name. The API will attempt to determine column types.
         To prevent Sheets of the same name being created, use the -overwriteAction and -overwriteSheetId parameters.
 
@@ -204,13 +190,97 @@ function Export-SmartSheet() {
         Multiple sheets can have the same name in a folder. If you omit this parameter a sheet with the same name will be created.
 
         .PARAMETER overwriteSheetId
-        Because tou can have multiple sheets with the same name (with different sheet Ids) you must provide the sheet Id for the overwrite action.
+        Because you can have multiple sheets with the same name (with different sheet Ids) you must provide the sheet Id for the overwrite action.
 
         .EXAMPLE
         PS> $ObjectArray | Export-Smartsheet -SheetName "MyNewSheet"
 
         .EXAMPLE
         PS> $objectArray | Export-Smartsheet -SheetName "MyNewSheet" -folder 'myfolder1/myfolder2'
+    #>
+}
+
+function Update-Smartsheet() {
+    [CmdletBinding()]
+    Param(
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipeline = $true
+        )]
+        [psObject]$InputObject,
+        [Parameter(Mandatory = $true)]
+        [string]$sheetId
+    )
+
+    $sheet = Get-Smartsheet -id $sheetId
+
+    # Verify columns, column names must match properties of the objects in the array.
+    $columns = $sheet.columns
+
+    $properties = $input[0].PSObject.properties | Select-Object Name
+
+    if ($columns.count -ne $properties.count) {
+        throw "Column count does not match!"
+    }
+
+    foreach ($prop in $properties) {
+        $col = $columns.Where({$_.title -eq $prop.Name})
+        if (-not $col) {
+            throw "Column names do not match"
+        }
+    }
+
+    foreach ($object in $input) {
+        $props = $object.PSObject.properties | Select-Object Name, Value
+        $cells = @()
+        foreach ($prop in $props) {
+            $index = $props.indexOf($prop)
+            $column = $sheet.columns[$index]
+            if ($column.type = 'PICKLIST') {
+                if ($column.options) {
+                    if ($prop.value -notin $column.options) {
+                        $options = $column.options
+                        $options += $prop.value
+                        $col = @{
+                            index = $column.index
+                            type = $column.type
+                            options = $options
+                        }
+                        $sheet = Set-SmartsheetColumn -Id $sheet.id -ColumnId $column.id -column $col -PassThru
+                    }
+                }
+            }
+            $cell = New-SmartSheetCell -columnId $column.id -value $prop.value
+            $cells += $cell
+        }
+        # Does the row exist based on the 1st column
+        $row = $sheet.rows.Where({$_.cells[0].value -eq $props[0].value})
+        if ($row) {
+            $sheet = Set-SmartsheetRow -id $sheetId -rowId $row.Id -Cells $cells -PassThru
+        } else {       
+            $index = $input.IndexOf($object)
+            if ($index -lt ($sheet.rows.Count -1)) {
+                $siblingRowId = $sheet.rows[$index].id
+                $sheet = New-SmartsheetRow -sheetId $sheet.id -siblingRowId $siblingRowId -cells $cells -location:below -PassThru
+            } else {
+                $sheet = New-SmartsheetRow -sheetId $sheet.id -cells $cells -PassThru
+            }
+        }
+    }
+    <#
+    .SYNOPSIS
+    Update a smartsheet.
+    .DESCRIPTION
+    Update a Smartsheet from an array of powershell objects.
+    1. The number and names of the columns is the same as the properties in the object in the array.
+    2. The primary column is the first column in the sheet and the column values are unique.
+    If condition 1 isn't met, and error will be thrown.
+    if Condition 2 isn't met, unpredictable results may occur.
+    .PARAMETER InputObject
+    An array of powershell objects.
+    .PARAMETER sheetId
+    The Id of the sheet to update.
+    
     #>
 }
 

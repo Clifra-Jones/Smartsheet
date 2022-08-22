@@ -1,20 +1,17 @@
-
 function Add-SmartSheetCellImage() {
-    [CmdletBinding()]
-    Param(
+    Param(        
         [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true
+            ValueFromPipelineByPropertyName = $true,
+            Mandatory = $true
         )]
-        [Alias('sheetId')]
-        [string]$Id,
+        [string]$Id,        
         [Parameter(Mandatory = $true)]
         [string]$rowId,
         [Parameter(Mandatory = $true)]
         [string]$columnId,
-        [string]$altText,
         [Parameter(Mandatory = $true)]
-        [string]$Path
+        [string]$Path,
+        [string]$altText
     )
 
     $Uri = "{0}/sheets/{1}/rows/{2}/columns/{3}/cellimages" -f $BaseURI, $id, $rowId, $columnId
@@ -53,7 +50,7 @@ function Add-SmartSheetCellImage() {
         .PARAMETER columnId
         Smartsheet column Id.
         .PARAMETER altText
-        ALternative text associated with the image.
+        Alternative text associated with the image.
         .PARAMETER Path
         Path tot he local image file.
         .OUTPUTS

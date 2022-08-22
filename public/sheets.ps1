@@ -416,7 +416,7 @@ function Rename-SmartSheet() {
         [Parameter(Mandatory = $true)]
         [String]$newSheetname
     )
-    Copy-Smartsheet -Id $Id -newSheetName $newSheetname
+    Copy-Smartsheet -Id $Id -newSheetName $newSheetname -includeAll
     Remove-Smartsheet -Id $Id
     <#
     .SYNOPSIS 
@@ -483,29 +483,25 @@ function Move-Smartsheet() {
 }
 
 function Get-SortedSmartsheet() {
-    [CmdletBinding(DefaultParameterSetName="single")]
+    [CmdletBinding()]
     Param(
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
         [string]$id,
-        [Parameter(ParameterSetName = "Multi")]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "Multi")]
         [psobject[]]$sortCriteria,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "single"
         )]
         [string]$columnId,
-        [Parameter(  
-            ParameterSetName = "Asc"
-        )]
-        [switch]$Ascending,
-        [Parameter(
-            Mandatory = $true,    
-            ParameterSetName = "Desc"
-        )]
-        [switch]$Descending
+        [Parameter(ParameterSetName = "single")]
+        [ValidateSet("ASCENDING","DESCENDING")]
+        [string]$direction = "ASCENDING"
     )
 
     $Headers = Get-Headers
@@ -514,15 +510,13 @@ function Get-SortedSmartsheet() {
     if ($sortCriteria) {
         $body = $sortCriteria | ConvertTo-Json -Compress
     } else {
-        $propreties = @{}
-        $propreties.Add("columnId", $columnId)
-        if ($Descending) {
-            $propreties.Add("direction","DESCENDING")
-        } else {
-            $propreties.Add("direction","ASCENDING")
+        $payload = @{
+            sortCriteria = @{
+                columnId = $columnId
+                direction = $direction
+            }
         }
-        $objBody = [PSCustomObject]$propreties
-        $body = $objBody | ConvertTo-Json -Compress
+        $body = $payload | ConvertTo-Json -Compress
     }
     try {
         return Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
@@ -560,7 +554,7 @@ function Get-SortedSmartsheet() {
     $sortCriteria += $criteria
     Create another criteria object
     PS >$criteria = @{
-        columnId = $Sheet.Columns.Where({$_,title -eq "Salary"}).ColumnId
+        columnId = $Sheet.Columns.Where({$_.title -eq "Salary"}).ColumnId
         direction = "DESCENDING"
     }
     Add this to the array

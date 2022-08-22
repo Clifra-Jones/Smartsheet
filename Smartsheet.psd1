@@ -128,12 +128,20 @@ FunctionsToExport = @(
     'Remove-SmartsheetDiscussion',
     'Get-SmartsheetRowDiscussions',
     'New-SMartsheetRowDiscussion',
+    'Copy-SmartsheetDiscussions',
     'Get-SmartSheetComment',
     'Set-SmartSheetComment'
     'Remove-SmartsheetComment',
     'New-SmartsheetComment',
     'Add-SmartSheetCellImage',
-    'Get-SmartsheetImageUrl'
+    'Get-SmartsheetImageUrl',
+    'Update-Smartsheet', 
+    'Search-SmartsheetAccount',
+    'Search-Smartsheet',
+    'Send-SmartsheetRowsViaEmail',
+    'Copy-SmartSheetRows',
+    'Move-SmartSheetRows',
+    'TestParm'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

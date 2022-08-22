@@ -1,86 +1,28 @@
 using namespace System.Collections.Generic
 
 function New-SmartsheetRow() {
-    [CmdletBinding(DefaultParameterSetName = "props")]
+    [CmdletBinding(DefaultParameterSetName = "deflault")]
     Param(
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'row'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'props'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,            
-            ParameterSetName = 'top'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'top2'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'above'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'above2'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'below'
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = 'below2'
-        )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true, ParameterSetName = "row")]
-        [Parameter(Mandatory = $true, ParameterSetName = 'top2')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'above2')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'below2')]
         [psObject]$Row,        
         [Parameter(ParameterSetName = 'props')]        
-        [Parameter(ParameterSetName = 'top')]
-        [Parameter(ParameterSetName = 'above')]
-        [Parameter(ParameterSetName = 'below')]
         [bool]$expanded,
         [Parameter(ParameterSetName = 'props')]
-        [Parameter(ParameterSetName = 'top')]
-        [Parameter(ParameterSetName = 'above')]
-        [Parameter(ParameterSetName = 'below')]
         [string]$format,
-        [Parameter(ParameterSetName = 'top')]
-        [Parameter(ParameterSetName = 'above')]
-        [Parameter(ParameterSetName = 'below')]
+        [Parameter(ParameterSetName = 'props')]
         [psobject[]]$cells,
         [Parameter(ParameterSetName = 'props')]
-        [Parameter(ParameterSetName = 'top')]
-        [Parameter(ParameterSetName = 'above')]
-        [Parameter(ParameterSetName = 'below')]
-        [bool]$locked, 
-        [Parameter(ParameterSetName = 'top')]
-        [Parameter(ParameterSetName = "top2")]
-        [switch]$top,
-        [Parameter(ParameterSetName = 'above')]
-        [Parameter(ParameterSetName = 'above2')]
-        [string]$aboveRow,
-        [Parameter(ParameterSetName = 'below')]
-        [Parameter(ParameterSetName = 'below2')]
-        [string]$belowRow #>
+        [bool]$locked,
+        [ValidateSet('top','bottom','above','below')]
+        [string]$location = 'bottom',
+        [string]$siblingRowId,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -91,26 +33,38 @@ function New-SmartsheetRow() {
         $body = $Row | ConvertTo-Json -Compress
     } else {
         $payload = [ordered]@{}
-        if ($top) { 
+        if ($location -eq 'top') { 
             $payload.Add("toTop", $true)
-        }elseif ($aboveRow) {
-            $payload.Add("siblingId". $aboveRow)
+        }elseif ($location -eq 'above') {
+            if (-not $siblingRowId) {
+                throw "siblingRowId must be provided when specifying location 'above'!"                
+            }
+            $payload.Add("siblingId". $siblingRowId)
             $payload.Add("above", $true)
-        } elseIf($belowRow) {
-            $payload.Add("sibling", $belowRow)
+        } elseIf($location -eq 'below') {
+            $payload.Add("siblingId", $siblingRowId)
         }
-        if ($expanded) { $payload.Add("Expamded", $expanded)}
+        if ($expanded) { $payload.Add("expanded", $expanded)}
         if ($format) { $payload.Add("format", $format) }
         if ($locked) { $payload.Add("locked", $locked )}
         If ($cells) {$payload.Add("cells", $cells)}
         
         $body = $payload | ConvertTo-Json -Compress
     }
-    $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message -eq "SUCCESS") {
-        return $response.result
-    } else {
-        return $false
+
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq "SUCCESS") {
+            if ($PassThru) {
+                return Get-Smartsheet -id $id
+            } else {
+                return $response.result
+            }
+        } else {
+            return $response.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -129,14 +83,15 @@ function New-SmartsheetRow() {
     Cells belonging to the row.
     .PARAMETER locked
     Indicates whether the row is locked.
-    .PARAMETER top
-    place the new row at the top of the sheet (Cannot be used with belowRow or aboveRow)
-    .PARAMETER aboveRow
-    Place the new row above the row ID assigned to this parameter (cannot be used with top or belowRow).
-    .PARAMETER belowRow
-    Place the new row below the row ID assigned to this parameter (cannot be used with top or aboveRow).
+    .PARAMETER location
+    The location to insert the row. Default is 'bottom'.
+    .PARAMETER siblingRowId
+    If location is above of below the row ID to insert the ro above or below. Required when specifying 'above' or 'below' for location.
+    .PARAMETER PassThru
+    REturn the updated sheet.
     .OUTPUTS
     The newly added row object.
+    if PassThru is specified, return the updated sheet object.
     #>
 }
 
@@ -147,7 +102,8 @@ function New-SmartsheetRows() {
         )]
         [string]$Id,
         [Parameter(Mandatory = $true)]
-        [psobject[]]$Rows
+        [psobject[]]$Rows,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -155,11 +111,19 @@ function New-SmartsheetRows() {
 
     $body = $Rows | ConvertTo-Json -Compress
 
-    $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message -eq 'SUCCESS') {
-        return $response.result
-    } else {
-        return $false
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq 'SUCCESS') {
+            if ($PassThru) {
+                return Get-Smartsheet -id $id
+            } else {
+                return $response.result
+            }
+        } else {
+            throw $response.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -169,9 +133,12 @@ function New-SmartsheetRows() {
     .PARAMETER Id
     The Id of the smartsheet to add the rows to.
     .PARAMETER Rows
-    An array of smartsheet row objects
+    An array of smartsheet row objects.
+    .PARAMETER PassThru
+    Return thenupdate sheet.
     .OUTPUTS
     An array of the newly created rows.
+    If PassThru is specified returns the updated sheet object.
     #>
 }
 function Remove-SmartsheetRow() {
@@ -183,21 +150,25 @@ function Remove-SmartsheetRow() {
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$rowId,
-        [bool]$ignoreRowsNotFound
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
     $Uri = "{0}/sheets/{1}/rows?ids={2}" -f $BaseURI, $Id, $rowId
 
-    If ($ignoreRowsNotFound) {
-        $Uri = $Uri + "&ignoreRowsNotFound=true"
-    }
-
-    $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
-    if ($response.message -eq "SUCCESS") {
-        return r$true
-    } else {
-        return $false
+    try{
+        $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
+        if ($response.message -eq "SUCCESS") {
+            if ($PassThru) {
+                return Get-SmartSheet -id $Id
+            } else {
+                return $true
+            }
+        } else {
+            return $response.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -208,10 +179,11 @@ function Remove-SmartsheetRow() {
     ID of Smartsheet to remove the row,
     .PARAMETER rowId
     The rowID of the row to remove.
-    .PARAMETER ignoreRowsNotFound
-    Supress errors if row not found.
+    .PARAMETER PassThru
+    Return the updated sheet.
     .OUTPUTS
-    Boolean indicating success or failure
+    True is delete was successfull.
+    if PassThru is specified returns the updated sheet object.
     #>
 }
 
@@ -224,7 +196,8 @@ function Remove-SmartsheetRows() {
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string[]]$rowIds,
-        [bool]$ignoreRowsNotFound
+        [bool]$ignoreRowsNotFound,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -236,15 +209,23 @@ function Remove-SmartsheetRows() {
         $Uri = $Uri + "&ignoreRowsNotFound=true"
     }
 
-    $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
-    if ($response.message -eq "SUCCESS") {
-        return r$true
-    } else {
-        return $false
+    try {
+        $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
+        if ($response.message -eq "SUCCESS") {
+            if ($PassThru) {
+                return Get-Smartsheet -id $Id
+            } else {
+                return $true
+            }
+        } else {
+            throw $response.message
+        }
+    } catch {
+        throw $_
     }
-    <#
+        <#
     .SYNOPSIS
-    Remove a Smartsheet Rows
+    Remove Smartsheet Rows
     .DESCRIPTION
     Remove rows from a smartsheet.
     .PARAMETER Id
@@ -253,26 +234,33 @@ function Remove-SmartsheetRows() {
     An array of rowIDs to be remove.
     .PARAMETER ignoreRowsNotFound
     Supress errors if row not found.
+    .PARAMETER PassThru
+    Returns the updated sheet.
     .OUTPUTS
-    Boolean indicating success or failure    
+    True if successfull.
+    if PassThru is specified, return the updated smartsheet object.
     #>
 }
 
 function Set-SmartsheetRow() {
-    [CmdletBinding(DefaultParameterSetName = "props")]
+    [CmdletBinding(DefaultParameterSetName = "default")]
     Param(
         [Parameter(
             Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "props"
+            ValueFromPipelineByPropertyName = $true
         )]
-        [Parameter(ParameterSetName = "row")]
-        [string]$Id,
+        [Alias('sheetId')]
+        [string]$Id,        
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "row"
         )]
         [psobject]$Row,
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = 'props'
+        )]
+        [string]$rowId,
         [Parameter(ParameterSetName = 'props')]
         [bool]$expanded,
         [Parameter(ParameterSetName = 'props')]
@@ -280,7 +268,8 @@ function Set-SmartsheetRow() {
         [Parameter(ParameterSetName = "props")]
         [psobject[]]$Cells,
         [Parameter(ParameterSetName = 'props')]
-        [bool]$locked
+        [bool]$locked,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -290,18 +279,24 @@ function Set-SmartsheetRow() {
     if ($Row) {
         $body = $Row | ConvertTo-Json -Compress
     } else {
-        $payload = [ordered]@{}
+        $payload = [ordered]@{
+            id = $rowId
+        }
         if ($expanded) { $payload.Add("expanded", $expanded) }
         if ($format) { $payload.Add("format", $format) }
         if ($locked) { $payload.Add("locked", $locked) }
-        If ($Cells) { $Payload.Add("Cells", $Cells)}        
+        If ($Cells) { $Payload.Add("cells", $Cells)}        
         $body = $payload | ConvertTo-Json -Compress
     }
     
     try {
         $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
         if ($response.message -eq "SUCCESS") {
-            return $response.result
+            if ($PassThru) {
+                return Get-Smartsheet -id $id
+            } else {
+                return $response.result
+            }
         } else {
             throw $response.message
         }
@@ -317,6 +312,8 @@ function Set-SmartsheetRow() {
     Id os the Smartsheet to update.
     .PARAMETER Row
     A Smartsheet row object containing the updates (cannot be used with individual properties).
+    .PARAMETER rowId
+    Row ID of the row to be updated.
     .PARAMETER expanded
     True if the row is expanded, false if not.
     .PARAMETER format
@@ -325,8 +322,11 @@ function Set-SmartsheetRow() {
     An array of Smartsheet cell objects.
     .PARAMETER locked
     Indicates if the row is locked or not.
+    .PARAMETER PassThru
+    Return the updated sheet
     .OUTPUTS
     Boolean indicating suncess or failure.
+    if PassThru is specified, return the updated sheet object.
     #>
 }
 
@@ -337,7 +337,8 @@ function Set-SmartsheetRows() {
             ValueFromPipelineByPropertyName = $true
         )]
         [string]$Id,
-        [psobject[]]$Rows
+        [psobject[]]$Rows,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -348,7 +349,11 @@ function Set-SmartsheetRows() {
     try {
         $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
         if ($response.message -eq "SUCCESS") {
-            return $response.result
+            if ($PassThru) {
+                return Get-Smartsheet -id $id
+            } else {
+                return $response.$result
+            }
         } else {
             throw $response.message
         }
@@ -364,8 +369,11 @@ function Set-SmartsheetRows() {
     ID of the Smartsheet to update.
     .PARAMETER Rows
     An array of smartsheet row objects. 
+    .PARAMETER PassThru
+    Return the updated sheet.
     .OUTPUTS
-    Boolean indicating success or failure
+    An array of updated rows.
+    If PassThru is specified, returns the updated sheet object,
     #>
 }
 
@@ -420,7 +428,7 @@ function Export-SmartsheetRows() {
         [switch]$blankRowAbove,
         [string]$title,
         [string]$titleFormat,
-        [switch]$includeHeaders,
+        [switch]$includeHeaders,        
         [string]$headerFormat
     )
 
@@ -449,7 +457,7 @@ function Export-SmartsheetRows() {
             $n = $PropCount - $Columns.Count
             1..$n | ForEach-Object {
                 $index = (columns.count -1) + $_
-                [void](Add-SmartsheetColumn -Id $sheetId -index $index -type:TEXT_NUMBER)
+                Add-SmartsheetColumn -Id $sheetId -index $index -type:TEXT_NUMBER
             }
         }
 
@@ -480,7 +488,7 @@ function Export-SmartsheetRows() {
     Export an array and appends to a smartsheet.
     .DESCRIPTION
     Exports a Powershell array and appends new rows to a smartsheet.
-    If no columns ecist in the smartsheet they are created as generic Columns, i.e. Column1, Column2.    
+    If no columns exist in the smartsheet they are created as generic Columns, i.e. Column1, Column2.    
     To generate a smartsheet with named columns from the objects of the array use Export-Smartsheet.
     .PARAMETER InputObject
     An array of Powershell objects.
@@ -498,5 +506,295 @@ function Export-SmartsheetRows() {
     A Smartsheet format string for the headers. To create a format string use New-SmartsheetFormatString.
     .OUTPUTS
     Nothing
+    .NOTES
+    This function is generally used to create the equivelent of an Excel table in a Smartsheet.
+    This is sort of "out of functionality" of how Smartsheets work, but some may find it Useful.
+    You can use ths finction to append rows to an existing Smartsheet. See ecample 2 below.
+    .EXAMPLE 
+    The following example imports the array into a smnartsheet, creates a blank row above the data and adds a title and a header row.
+    (To create the format veriables use New-SmartsheetFormatString)
+    PA> $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
+    .EXAMPLE
+    The following example inports the array into a smartsheet appending the rows to the existing sheet without any title or headers. 
+    This can be used to append rows to the Smartsheet. No attempt is made to prevent duplicate data.
+    If the number of properties in the objects is more than the existing columns, then generic columns are created.
+    (To update rows based in their primary column values use the Update-Smartsheet function.)
+    PS> $Array | Export-SmartsheetRows 
+    #>
+}
+
+function Send-SmartsheetRowsViaEmail() {
+    [CmdletBinding()]
+    Param(
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sheetId')]
+        [string]$Id,
+        [Parameter(Mandatory = $true)]
+        [string[]]$rowIds,
+        [string[]]$columnIds,
+        [Parameter(Mandatory = $true)]
+        [string[]]$To,
+        [string]$subject,
+        [string]$message,
+        [switch]$includeAttachments,
+        [switch]$includeDiscussions,
+        [ValidateSet('HORIZONTAL','VERTICAL')]
+        [string]$layout = 'HORIZONTAL',
+        [switch]$ccMe
+    )
+
+    $Headers = Get-Headers
+
+    $Uri = "{0}/sheets/{1}/rows/emails" -f $BaseURI, $Id
+
+    $sendto = @()
+    $To | ForEach-Object {
+        $sendTo += [PSCustomObject]@{
+            email = $_
+        }
+    }
+
+    $payload = [ordered]@{
+        rowIds = $rowIds
+        columnIds = $columnIds
+        includeAttachments = $includeAttachments.IsPresent
+        includeDiscussions = $includeDiscussions.IsPresent        
+        layout = $layout        
+        ccMe = $ccMe.IsPresent
+        message = $message
+        sendTo = $sendTo
+        subject = $subject
+    }
+
+    $body = $payload | ConvertTo-Json
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq 'SUCCESS') {
+            return $true
+        } else {
+            throw $response.message
+        }
+    } catch {
+        throw $_
+    }
+    <#
+    .SYNOPSIS
+    Send a select set of rows via email,
+    .PARAMETER Id
+    The Smartsheet Id.
+    .PARAMETER rowIds
+    An array row Ids to be included.
+    .PARAMETER columnIds
+    An array of column Ids to be included.
+    If the columnIds attribute of the MultiRowEmail object is specified as an array of column Ids, those specific columns are included.
+    If the columnIds attribute of the MultiRowEmail object is omitted, all columns except hidden columns shall be included.
+    If the columnIds attribute of the MultiRowEmail object is specified as empty, no columns shall be included. (NOTE: In this case, either includeAttachments=true or includeDiscussions=true must be specified.)
+    .PARAMETER To
+    An array of recipients.
+    .PARAMETER subject
+    The subject of the email.
+    .PARAMETER message
+    The message of the email.
+    .PARAMETER ccMe
+    Copy email to sender.
+    .PARAMETER layout
+    Layout of the rows. Either horizontal or Vertical. Default is horizontal for multiple rows, vertical for a single row.
+    .PARAMETER includeAttachments
+    Include attachment in email.
+    .PARAMETER includeDiscussions
+    Include Discussions in email.
+    #>
+}
+
+function Copy-SmartSheetRows() {
+    [CmdletBinding(DefaultParameterSetName = 'default')]
+    Param(
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sourceSheetId')]
+        [string]$Id,
+        [Parameter(Mandatory = $true)]
+        [string]$targetSheetId,
+        [Parameter(Mandatory = $true)]
+        [string[]]$rowIds,
+        [Parameter(ParameterSetName='all')]
+        [switch]$includeAll,
+        [Parameter(ParameterSetName = 'each')]
+        [switch]$includeAttachments,
+        [Parameter(ParameterSetName = 'each')]
+        [switch]$includeChildren,
+        [Parameter(ParameterSetName = 'each')]
+        [switch]$includeDiscussions,
+        [switch]$ignoreRowsNotFound
+    )
+    
+    $Headers = Get-Headers
+
+    $Uri = "{0}/sheets/{1}/rows/copy" -f $BaseURI, $Id
+
+    if ($includeAll) {
+        $uri = "{0}?include=all" -f $Uri
+    } else {
+        $includes = @()
+        if ($includeAttachments) {
+            $Includes += "attachments"
+        }
+        if ($includeChildren) {
+            $includes += "children"
+        }
+        if ($includeDiscussions) {
+            $includes += "discussions"
+        }
+        if ($includes.Length -gt 0) {
+            $str_Includes = $includes -split ","
+            $Uri = "{0}?include=" -f $Uri, $str_includes
+        }
+    }
+
+    If ($ignoreRowsNotFound) {
+        if ($Uri.Contains("?") ) {
+            $Uri = "{0}&ignoreRowsNotFound=true" -f $Uri
+        } else {
+            $Uri = "{0}?ignoreRowsNotFound=true" -f $Uri
+        }
+    }
+
+    $payload = [ordered]@{
+        rowIds = $rowIds
+        to = @{
+            sheetId = $id
+        }
+    }
+
+    $body = $payload | ConvertTo-Json -Compress
+
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        return $response
+    } catch {
+        throw $_
+    }
+    <#
+    .SYNOPSIS
+    Copy rows from on Smartsheet to another.
+    .DESCRIPTION
+    Copies selected rows tro the bottom of the target sheet.
+    .PARAMETER Id
+    The source Sheet Id
+    .PARAMETER targetSheetId
+    The Target sheet Id.
+    .PARAMETER rowIds
+    An array of row Ids to copy to the target sheet. 
+    .PARAMETER includeAll
+    include all of 'attachments', 'children' and 'discussions'
+    .PARAMETER includeAttachments
+    Include row attachments.
+    .PARAMETER includeChildren
+    Include Child rows.
+    If specified, any child rows of the rows specified in the request are also copied to the destination sheet, 
+    and parent-child relationships amongst rows are preserved within the destination sheet; if not specified, 
+    only the rows specified in the request are copied.
+    .PARAMETER includeDiscussions
+    Include row discussions.
+    .PARAMETER ignoreRowsNotFound
+    If specified, row Ids that do not exist within the source sheet does not cause an error response. If omitted, 
+    specifying row Ids that do not exist within the source sheet causes an error response (and no rows are copied).
+    .OUTPUTS
+    An object containing the row mappings.
+    #>
+}
+
+function Move-SmartSheetRows() {
+    [CmdletBinding(DefaultParameterSetName = 'default')]
+    Param(
+        [Parameter(
+            Mandatory =  $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sourceSheetId')]
+        [string]$id,
+        [Parameter(Mandatory = $true)]
+        [string]$targetSheetId,
+        [Parameter(Mandatory = $true)]
+        [string[]]$rowIds,
+        [Parameter(ParameterSetName='all')]
+        [switch]$includeAll,
+        [Parameter(ParameterSetName = 'each')]
+        [switch]$includeAttachments,
+         [Parameter(ParameterSetName = 'each')]
+        [switch]$includeDiscussions,
+        [switch]$ignoreRowsNotFound
+    )
+
+    $Headers = Get-Headers
+
+    $Uri = "{0}/sheets/{1}/rows/move" -f $BaseURI, $Id
+
+    if ($includeAll) {
+        $uri = "{0}?include=attachments,discussions" -f $Uri
+    } else {
+        $includes = @()
+        if ($includeAttachments) {
+            $Includes += "attachments"
+        }
+        if ($includeDiscussions) {
+            $includes += "discussions"
+        }
+        if ($includes.Length -gt 0) {
+            $str_Includes = $includes -split ","
+            $Uri = "{0}?include=" -f $Uri, $str_includes
+        }
+    }
+
+    If ($ignoreRowsNotFound) {
+        if ($Uri.Contains("?") ) {
+            $Uri = "{0}&ignoreRowsNotFound=true" -f $Uri
+        } else {
+            $Uri = "{0}?ignoreRowsNotFound=true" -f $Uri
+        }
+    }
+
+    $payload = [ordered]@{
+        rowIds = $rowIds
+        to = @{
+            sheetId = $id
+        }
+    }
+
+    $body = $payload | ConvertTo-Json -Compress
+
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        return $response
+    } catch {
+        throw $_
+    }
+    <#
+    .SYNOPSIS
+    Move rows from on Smartsheet to another.
+    .DESCRIPTION
+    Moves selected rows tro the bottom of the target sheet.
+    .PARAMETER Id
+    The source Sheet Id
+    .PARAMETER targetSheetId
+    The Target sheet Id.
+    .PARAMETER rowIds
+    An array of row Ids to move to the target sheet. 
+    .PARAMETER includeAll
+    include both attachments and discussions.
+    .PARAMETER includeAttachments
+    Include row attachments.
+    .PARAMETER includeDiscussions
+    Include row discussions.
+    .PARAMETER ignoreRowsNotFound
+    If specified, row Ids that do not exist within the source sheet does not cause an error response. If omitted, 
+    specifying row Ids that do not exist within the source sheet causes an error response (and no rows are copied).
+    .OUTPUTS
+    An object containing the row mappings.
     #>
 }

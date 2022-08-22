@@ -34,17 +34,28 @@ function Add-SmartsheetAttachment() {
     Param(
         [Parameter(
             Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true
+            ValueFromPipelineByPropertyName = $true            
         )]
         [Alias("sheetId")]
         [string]$Id,
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = 'file'
+        )]
         [string]$Path,
+        [Parameter(ParameterSetName = 'url')]
         [string]$Url,
+        [Parameter(ParameterSetName = 'url')]
         [ValidateSet("BOX_COM", "DROPBOX", "EGNYTE", "EVERNOTE", "FILE", "GOOGLE_DRIVE", "LINK", "ONEDRIVE")]
         [string]$Type = "LINK",
+        [Parameter(ParameterSetName = 'url')]
         [ValidateSet("DOCUMENT", "DRAWING", "FOLDER", "PDF", "PRESENTATION", "SPREADSHEET")]
         [string]$subType = "DOCUMENT",
+        [Parameter(ParameterSetName='url')]
+        [Parameter(ParameterSetName='file')]
         [string]$description,
+        [Parameter(ParameterSetName='url')]
+        [Parameter(ParameterSetName='file')]
         [string]$name
     )
     
@@ -101,7 +112,7 @@ function Add-SmartsheetAttachment() {
     }
     <#
     .SYNOPSIS
-    Ads a attachment to a Smartsheet.
+    Adds a attachment to a Smartsheet.
     .DESCRIPTION
     Add either a file attachment or a URL attachment. URLs can point to links or cloud service files/folders.
     .PARAMETER Id

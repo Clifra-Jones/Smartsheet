@@ -32,25 +32,22 @@ function Get-SmartsheetColumn () {
 }
 
 function Set-SmartsheetColumn {
-    [CmdletBinding(DefaultParameterSetName = "props")]
+    [CmdletBinding(DefaultParameterSetName = "default")]
     param (
         [Parameter(
             Mandatory = $true,
-            ParameterSetName = "props"
+            ValueFromPipelineByPropertyName = $true
         )]
-        [Parameter(Mandatory = $true, ParameterSetName = "column")]
         [string]$Id,
         [Parameter(
-            Mandatory = $true,    
-            ParameterSetName="column",
-            ValueFromPipeline = $true
-        )]
-        [psObject]$column,
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = 'props'
+            Mandatory = $true
         )]
         [string]$ColumnId,
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = 'column'
+        )]
+        [psobject]$column,
         [Parameter(Mandatory = $true, ParameterSetName ='props')]
         [int]$Index,
         [Parameter(ParameterSetName ='props')]
@@ -83,7 +80,8 @@ function Set-SmartsheetColumn {
         [Parameter(ParameterSetName ='props')]
         [bool]$validation,
         [Parameter(ParameterSetName ='props')]
-        [int]$width
+        [int]$width,
+        [switch]$PassThru
     )
 
 
@@ -119,9 +117,15 @@ function Set-SmartsheetColumn {
         $body = $body | ConvertTo-Json -Compress
     }
     # remove the property 'lockedForUser as you cannot write that to the API.
-   
-    $response = Invoke-RestMethod -Method Put -Uri $Uri -Headers $Headers -Body $body
-    return $response
+    try {
+        $response = Invoke-RestMethod -Method Put -Uri $Uri -Headers $Headers -Body $body
+        if ($PassThru) {
+            return Get-Smartsheet -id $id
+        }
+        return $response
+    } catch {
+        throw $_
+    }
     <#
     .SYNOPSIS
     Update a Smartsheet column
@@ -167,15 +171,22 @@ function Set-SmartsheetColumn {
     2: MULTI_PICKLIST.
     .PARAMETER width
     Display width of the column in pixels.
+    .PARAMETER PassThru
+    Return the updated sheet.
     .OUTPUTS
     An updated column object.
+    If PassThru is provided returns the updated sheet object.
     #>
 } 
 
 function Get-SmartsheetColumns () {
     Param(
-        [Parameter(Mandatory = $true)]
-        [string]$SheetId
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sheetId')]
+        [string]$Id
     )
 
     $Headers = Get-Headers
@@ -233,7 +244,8 @@ function Add-SmartsheetColumn() {
         [string]$systemColumnType,
         [bool]$validation,
         [int]$version,
-        [int]$width
+        [int]$width,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -264,10 +276,17 @@ function Add-SmartsheetColumn() {
         $column = [psCustomObject]$properties
         $body = $column | ConvertTo-Json -Compress
     }
-    
-    $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message -eq "SUCCESS") {
-        return $response.result
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq "SUCCESS") {
+            if ($PassThru) {
+                return Get-Smartsheet -id $id
+            } else {
+                return $response.result
+            }
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -319,8 +338,11 @@ function Add-SmartsheetColumn() {
     2: MULTI_PICKLIST.
     .PARAMETER width
     Display width of the column in pixels.
+    .PARAMETER PassThru
+    Return the updated sheet.
     .OUTPUTS
     An updated column object.
+    if PassThru is provided returns the updated sheet object.
     .EXAMPLE
     To add a new colum to a Smartsheet.
     PS> $newColumn = $Sheet | Add-SmartsheetColumn -title "Title" -type:TEXT_NUMBER -description 'My new column'
@@ -350,7 +372,8 @@ function Add-SmartsheetColumns() {
             ValueFromPipelineByPropertyName = $true
         )]
         [string]$Id,
-        [psobject[]]$columns
+        [psobject[]]$columns,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
@@ -359,10 +382,14 @@ function Add-SmartsheetColumns() {
     $body = $Columns | ConvertTo-Json -Compress
 
     $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
-    if ($response.message -eq "SUCCESS") {
-        return $response.result
-    } else{
-        throw $response.message
+    try {
+        if ($response.message -eq "SUCCESS") {
+            return $response.result
+        } else{
+            throw $response.message
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -373,8 +400,11 @@ function Add-SmartsheetColumns() {
     The Id fo the smartsheet to add columns to.
     .PARAMETER columns
     An array of smartsheet columns.
+    .PARAMETER PassThru
+    Return the updated Sheet.
     .OUTPUTS
     An array of the newly added columns.
+    if PassThru is provided returns the updated sheet object.
     #>
 }
 
@@ -386,17 +416,25 @@ function Remove-SmartsheetColumn() {
         )]
         [string]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$columnId
+        [string]$columnId,
+        [switch]$PassThru
     )
 
     $Headers = Get-Headers
     $Uri = "{0}/sheets/{1}/columns/{2}" -f $BaseURI, $Id, $columnId
 
-    $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
-    If ($response.message = "SUCCESS") {
-        return $true
-    } else {
-        return $false
+    try {
+        $response = Invoke-RestMethod -Method DELETE -Uri $Uri -Headers $Headers
+        If ($response.message = "SUCCESS") {
+            if ($PassThru) {
+                return Get-SmartSheet -id $id
+            }
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        throw $_
     }
     <#
     .SYNOPSIS
@@ -407,7 +445,10 @@ function Remove-SmartsheetColumn() {
     The Id of the Smartsheet to remove the column.
     .PARAMETER columnId
     The ID of the column to remove.
+    .PARAMETER PassThru
+    Return the updated sheet.
     .OUTPUTS
     Boolean indicating success or failue of the operation.
+    if PassThru is provided returns the updated sheet object.
     #>    
 }
