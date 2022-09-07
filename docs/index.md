@@ -13,7 +13,7 @@ This module includes most of the functions to interact with Sheets. Functions fo
 
 OAuth authentication has not been implemented at this time. You must use an Access token generated from your Smartsheet account.
 To generate an API Access Token click on the Account Icon at the bottom of the left sidebar. Select Personal Settings, select API Access and then Generate
-an Access Token. Save the Access token in a save place (a folder ONLY you have access to) you will not be able to retrieve the token after this. If you lose your token you will need to generate a new one.
+an Access Token. Save the Access token in a safe place (a folder ONLY you have access to) you will not be able to retrieve the token after this. If you lose your token you will need to generate a new one.
 
 ## Developer Account
 
@@ -39,6 +39,7 @@ Change to your user module directory.
 
 For **Windows**:
 >cd %USERPROFILE%\Documents\Powershell\Modules
+
 For **Linux/Mac**:
 >cd ~/.local/share/powershell/Modules
 
@@ -51,6 +52,7 @@ Change to the system module directory.
 
 for **Windows**:
 >cd %PROGRAMFILES%\PowerShell\Modules
+
 For **Linux/Mac**:
 >cd /usr/local/share/powershell/MOdules
 
