@@ -24,7 +24,7 @@ function Get-SmartsheetColumn () {
     .PARAMETER Id
     The Id of the sheet to retrieve the column.
     .PARAMETER ColumnId
-    The column ID to retrieve.
+    The column Id to retrieve.
     .OUTPUTS
     A smartsheet column ofbject.
 
@@ -207,43 +207,59 @@ function Get-SmartsheetColumns () {
 }
 
 function Add-SmartsheetColumn() {
-    [CmdletBinding(DefaultParameterSetName = "props")]
+    [CmdletBinding()]
     param (
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sheetId')]
+        [string]$Id,
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "column"
+        )]
+        [psObject]$column,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "props"
         )]
-        [Parameter(ParameterSetName = "column")]
-        [string]$Id,
-        [Parameter(
-            Mandatory = $true,    
-            ParameterSetName="column",
-            ValueFromPipeline = $true
-        )]
-        [psObject]$column,
-        [Parameter(
-            Mandatory = $true
-        )]
         [string]$ColumnId,
-        [Parameter(Mandatory = $true)]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "props"
+        )]
         [int]$Index,
+        [Parameter(ParameterSetName = 'props')]
         [string]$title,
+        [Parameter(ParameterSetName = 'props')]
         [string]$description,
+        [Parameter(ParameterSetName = 'props')]
         [ValidateSet("ABSTRACT_DATETIME", "CHECKBOX", "CONTACT_LIST", "DATE", 
             "DATETIME", "DURATION", "MULTI_CONTACT_LIST", "MULTI_PICKLIST", "PICKLIST", "PREDECESSOR", "TEXT_NUMBER")]
         [string]$type,
+        [Parameter(ParameterSetName = 'props')]
         [psobject]$formula,
+        [Parameter(ParameterSetName = 'props')]
         [bool]$hidden,
+        [Parameter(ParameterSetName = 'props')]
         [psobject]$autoNumberFormat,
+        [Parameter(ParameterSetName = 'props')]
         [psobject]$contactOptions,
+        [Parameter(ParameterSetName = 'props')]
         [string]$format,
+        [Parameter(ParameterSetName = 'props')]
         [bool]$locked,
+        [Parameter(ParameterSetName = 'props')]
         [string[]]$options,
+        [Parameter(ParameterSetName = 'props')]
         [string]$symbol,
+        [Parameter(ParameterSetName = 'props')]
         [ValidateSet("AUTO_NUMBER", "CREATED_BY", "CREATED_DATE", "MODIFIED_BY", "MODIFIED_DATE")]
         [string]$systemColumnType,
+        [Parameter(ParameterSetName = 'props')]
         [bool]$validation,
-        [int]$version,
+        [Parameter(ParameterSetName = 'props')]
         [int]$width,
         [switch]$PassThru
     )
@@ -271,7 +287,6 @@ function Add-SmartsheetColumn() {
         if ($symbol) { $properties.Add("symbol", $symbol) }
         if ($systemColumnType) { $properties.Add("systemColumnType", $systemColumnType) }
         if ($validation) { $properties.Add("validation", $validation) }
-        if ($version) { $properties.Add("version", $version) }
         if ($width) { $properties.Add("width", $width) }        
         $column = [psCustomObject]$properties
         $body = $column | ConvertTo-Json -Compress
@@ -366,12 +381,15 @@ function Add-SmartsheetColumn() {
 }
 
 function Add-SmartsheetColumns() {
+    [CmdletBinding(DefaultParameterSetName = 'allq')]
     Param(
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
+        [Parameter(Mandatory = $true)]
         [psobject[]]$columns,
         [switch]$PassThru
     )
@@ -397,7 +415,7 @@ function Add-SmartsheetColumns() {
     .DESCRIPTION
     Adds an array of Smartsheet columns to a Smartsheet.
     .PARAMETER Id
-    The Id fo the smartsheet to add columns to.
+    The Id of the smartsheet to add columns to.
     .PARAMETER columns
     An array of smartsheet columns.
     .PARAMETER PassThru
@@ -414,6 +432,7 @@ function Remove-SmartsheetColumn() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$columnId,
@@ -444,11 +463,105 @@ function Remove-SmartsheetColumn() {
     .PARAMETER Id
     The Id of the Smartsheet to remove the column.
     .PARAMETER columnId
-    The ID of the column to remove.
+    The Id of the column to remove.
     .PARAMETER PassThru
     Return the updated sheet.
     .OUTPUTS
     Boolean indicating success or failue of the operation.
     if PassThru is provided returns the updated sheet object.
     #>    
+}
+
+function New-SmartsheetColumn() {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [string]$title,
+        [switch]$primary,
+        [string]$description,        
+        [ValidateSet("ABSTRACT_DATETIME", "CHECKBOX", "CONTACT_LIST", "DATE", 
+            "DATETIME", "DURATION", "MULTI_CONTACT_LIST", "MULTI_PICKLIST", "PICKLIST", "PREDECESSOR", "TEXT_NUMBER")]
+        [string]$type = "TEXT_NUMBER",
+        [psobject]$formula,
+        [switch]$hidden,
+        [psobject]$autoNumberFormat,
+        [psobject]$contactOptions,
+        [string]$format,
+        [switch]$locked,
+        [string[]]$options,
+        [string]$symbol,
+        [ValidateSet("AUTO_NUMBER", "CREATED_BY", "CREATED_DATE", "MODIFIED_BY", "MODIFIED_DATE")]
+        [string]$systemColumnType,
+        [switch]$validation,
+        [int]$width
+    )
+
+    $properties = [ordered]@{
+        title = $title
+        type = $type
+        primary = $primary.IsPresent
+    }
+    if ($description) {$properties.Add("description", $description)}
+    if ($formula) {$properties.Add("formula", $formula)}
+    if ($hidden.IsPresent) {$properties.Add("hidden", $hidden.IsPresent)}
+    if ($autoNumberFormat) {$properties.Add("autoNumberFormat", $autoNumberFormat)}
+    if ($contactOptions) {$properties.Add("contactOptions", $contactOptions)}
+    if ($format) {$properties.Add("format", $format)}
+    if ($locked.IsPresent) {$properties.add("locked", $locaked.IsPresent)}
+    if ($options) {
+        if ($type -notin "PICKLIST","MULTI_PICKLIST") {
+            throw "Option are only valid for column types PICKLIST or MULTI_PICKLIST!"
+        }
+        $properties.Add("options", $options)
+    }
+    if ($symbol) {$properties.Add("symbol", $symbol)}
+    if ($systemColumnType) {$properties.Add("systemColumnType", $systemColumnType)}
+    if ($validation.IsPresent) {$properties.Add("validation", $validation.IsPresent)}
+    if ($width) {
+        $properties.Add("width", $width)
+    } else {
+        $properties.Add("width", 100)
+    }
+
+    $column = [PSCustomObject]$Properties
+    return $column
+    <#
+    .SYNOPSIS
+    Create a Smartsheet Column object.
+    .DESCRIPTION
+    This function does not insert the column into a sheet. Use the Add-SmartsheetColumn function to add the column to a sheet.
+    .PARAMETER title
+    Column title
+    .PARAMETER primary
+    Set this column to the primary column.
+    NOTE: if a primary column already exists this wil cause an error when added to a smartsheet.
+    .PARAMETER description
+    Colunm description.
+    .PARAMETER type
+    Column type.
+    .PARAMETER formula
+    Formula forthe column.
+    .PARAMETER hidden
+    Column is hidden
+    .PARAMETER autoNumberFormat
+    Object that describes how the the System Column type of "AUTO_NUMBER" is auto-generated.
+    .PARAMETER contactOptions
+    Array of ContactOption objects to specify a pre-defined list of values for the column. Column type must be CONTACT_LIST.
+    .PARAMETER format
+    The format descriptor.
+    .PARAMETER locked
+    Column is locked.
+    .PARAMETER options
+    Array of option for the column. Only valid for PICKLIST and MULTI_PICKLIST column types.
+    .PARAMETER symbol
+    Only applicable for CHECKBOX and PICKLIST column types.
+    .PARAMETER systemColumnType
+    If this is a SystemColumn type the type of system column.
+    .PARAMETER validation
+    Is validation enabled.
+    .PARAMETER width
+    Width of the column in pixels.
+    .OUTPUTS
+    A Smartsheet column object.
+    #>
 }

@@ -88,7 +88,7 @@ function Get-SmartsheetDiscussion() {
     #>
 }
 
-function New-SmartsheetDiscussion() {
+function Add-SmartsheetDiscussion() {
     [CmdletBinding(DefaultParameterSetName = 'default')]
     Param(
         [Parameter(
@@ -171,7 +171,7 @@ function Remove-SmartsheetDiscussion() {
     .DESCRIPTION
     Removes a discussion from a smartsheet. This will remove all comments and attachments.
     .PARAMETER id
-    The Smartshett Id.
+    The Smartsheet Id.
     .PARAMETER discussionId
     The discussion Id.
     .OUTPUTS
@@ -234,7 +234,7 @@ function Get-SmartsheetRowDiscussions() {
     #>
 }
 
-function New-SmartsheetRowDiscussion() {
+function Add-SmartsheetRowDiscussion() {
     [CmdletBinding()]
     Param(
         [Parameter(
@@ -407,7 +407,7 @@ function Remove-SmartsheetComment() {
     #>
 }
 
-function New-SmartsheetComment() {
+function Add-SmartsheetComment() {
     [CmdletBinding()]
     Param(
         [Parameter(
@@ -458,8 +458,12 @@ function New-SmartsheetComment() {
 function Copy-SmartsheetDiscussions() {
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true)]
-        [string]$sourceSheetId,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sourceSheetId')]
+        [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$targetSheetId
     )
@@ -470,10 +474,20 @@ function Copy-SmartsheetDiscussions() {
     # Process the Sheet level dicussions 1st.
     $sourceSheetDiscussions = $sourceDiscussions.Where({$_.parentType -eq 'SHEET'})
     foreach ($sourceSheetDiscussion in $sourceSheetDiscussions) {
-        $newDiscussion = New-SmartsheetDiscussion -sheetId $targetSheetId -text $sourceSheetDiscussion.title
+        $newDiscussion = Add-SmartsheetDiscussion -sheetId $targetSheetId -text $sourceSheetDiscussion.title
         # Process the comments.
         foreach ($comment in $sourceSheetDiscussions.comments | Select-Object -Skip 1) {
-            [void](New-SmartsheetComment -sheetId $targetSheetId -discussionId $newDiscussion.id -text $comment.text)
+            [void](Add-SmartsheetComment -sheetId $targetSheetId -discussionId $newDiscussion.id -text $comment.text)
         }        
     }
+    <#
+    .SYNOPSIS
+    Copy discussions from one Smartsheet to another.
+    .DESCRIPTION
+    Copy all discussions from a source Smartsheet to another smartsheet.
+    .PARAMETER Id
+    The source Smartsheet Id.
+    .PARAMETER targetSheetId
+    The Target Smartsheet Id.
+    #>
 }

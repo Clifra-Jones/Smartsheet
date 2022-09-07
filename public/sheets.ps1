@@ -1,4 +1,152 @@
 using namespace System.Collections.Generic
+
+function New-Smartsheet() {
+    [CmdletBinding(DefaultParameterSetName = 'default')]
+    Param(
+        [Alias('folderId','workspaceId')]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = "container"
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = "container_w_columns"
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true,
+            ParameterSetName = "container_w_template"
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "container_w_template2"
+        )]
+        [string]$id,
+        [ValidateSet('home','folder','workspace')]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "container"
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "container_w_columns"
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "container_w_template"
+        )]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = "container_w_template2"
+        )]
+        [string]$containerType,
+        [Parameter(Mandatory = $true)]
+        [string]$sheetName,        
+        [Parameter(ParameterSetName = "columns")]
+        [Parameter(ParameterSetName = "container_w_columns")]
+        [psobject[]]$columns,        
+        [Parameter(ParameterSetName = 'template')]
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template")]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [string]$templateId,
+        [Parameter(ParameterSetName = 'template')]
+        [Parameter(ParameterSetName = "container_w_template")]
+        [switch]$includeAll,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeAttachments,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeCellLinks,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeData,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeDiscussions,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeFilters,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeForms,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeRuleReceipts,
+        [Parameter(ParameterSetName = 'template2')]
+        [Parameter(ParameterSetName = "container_w_template2")]
+        [switch]$includeRules 
+    )
+
+    if (-not $containerType) {$containerType = 'home'}
+
+    switch ($containerType) {
+        'folder' {
+            $Uri = "{0}/folders/{1}/sheets" -f $BaseURI, $id
+        }
+        'workspace' {
+            $Uri = "{0}/workspaces/{1}/sheets" -f $BaseURI, $Id
+            if ($includeAll) {
+                $includes = "attachments", "cellLinks", "data", "discussions", "filters", "forms", "ruleRecipients", "rules"
+                $Uri = "{0}?include={1}" -f $Uri, ($includes -join ",")
+            } else {
+                $includes = [List[string]]::New()
+                if ($includeAttachments) {$includes.Add("attachments")}
+                if ($includeCellLinks) {$includes.Add("cellLinks")}
+                if ($includeData) {$includes.Add("data")}
+                if ($includeDiscussions) {$includes.Add("discussions")}
+                if ($includeFilters) {$includes.Add("filters")}
+                if ($includeForms) {$includes.Add("forms")}
+                if ($includeRuleReceipts) {$includes.Add("ruleReciepts")}
+                if ($includeRules) {$includes.Add("rules")}
+
+                if ($includes.Count -gt 0) {
+                    $Uri = "{0}?include={1}" -f $Uri, ($includes.ToArray() -join ",")
+                }
+            }
+        }
+        'home' {
+            $Uri = "{0}/sheets" -f $BaseURI
+        }
+    }
+    
+    $Headers = Get-Headers
+
+    if ($columns) {
+        $payload = [ordered]@{
+            name = $sheetName
+            columns = $columns
+        }
+    } elseif ($templateId) {
+        $payload = [ordered]@{
+            fromId = $templateId
+            name = $sheetName
+        }
+    } else {
+        $columns = @()
+        $columns += New-SmartsheetColumn -title "NewColumn" -primary
+        $payload = [ordered]@{
+            name = $sheetName
+            columns = $columns
+        }
+    }
+    $body = $payload | ConvertTo-Json -Compress
+
+    try {
+        $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
+        if ($response.message -eq 'SUCCESS') {
+            return $response.result
+        } else {
+            throw $response.message
+        }
+    } catch {
+        throw $_
+    }
+
+}
 function Get-Smartsheets () {
     <#
     .DESCRIPTION
@@ -97,7 +245,7 @@ function Get-Smartsheet () {
                 $msg = "Sheet {0} not found!" -f $Name
                 Throw $msg
             }
-            # There may be more tehan one sheet that matches the name. Prompt the user to select the sheet.
+            # There may be more than one sheet that matches the name. Prompt the user to select the sheet.
             if ($sheetInfo -is [array]) {
                 Write-Host "Select Which Sheet to load:"
                 Do {
@@ -183,7 +331,7 @@ function Get-Smartsheet () {
     .DESCRIPTION
     Retrieves an individual sheet by either the sheet ID or the Name.
     Note: There can be multiple sheets with the same name. Using the Sheet ID is more accurate!
-    The object returned has an additional method ToPSObject, this method returns an array of objects based on the sheet rows and columns.
+    The object returned has an additional method ToArray(), this method returns an array of PowerShell objects based on the sheet rows and columns.
     .PARAMETER id
     Sheet ID, cannot be used with the Name parameter.
     .PARAMETER Name
@@ -235,6 +383,10 @@ function Get-Smartsheet () {
     contains cells in the specified columns.
     .PARAMETER rowIds
     A array of row Ids on which to filter the rows included in the result.
+    .NOTES
+    When retrieving a smartsheet by name there is always the chance that there are multiple sheets with the same name in a folder.
+    If more than ione sheet have the same name, you will be prompted to select the sheet yu want from a list. 
+    The list will show Sheet name and modified date.
     .OUTPUTS
     A Smartsheet sheet object.
     There is an added method named ToArray that returns the sheet as an array of PowerShell objects.
@@ -404,6 +556,8 @@ function Copy-Smartsheet() {
     Include Shares
     .PARAMETER excludeSheetHyperlinks
     Exclude sheet hyperlinks.
+    .PARAMETER passThru
+    Returns the copied Smartsheet object.
     #>
 }
 function Rename-SmartSheet() {
@@ -440,6 +594,7 @@ function Move-Smartsheet() {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(ParameterSetName = "container")]
         [string]$containerId,
@@ -475,9 +630,10 @@ function Move-Smartsheet() {
     .PARAMETER Id
     ID of the the Smartsheet to move.
     .PARAMETER containerId
-    Id of the container to move th4 smartsheet to. 
+    Id of the container (folder/workspace) to move the Smartsheet to. 
+    if omitted the container is 'home'
     .PARAMETER containerType
-    Can be in of 'folder', 'workspace or 'home'. If 'home' then containerId must be omitted.
+    Can be one of 'folder', 'workspace or 'home'. If 'home' then containerId must be omitted.
     The default for this property is 'home' if omitted.
     #>
 }
@@ -531,34 +687,38 @@ function Get-SortedSmartsheet() {
     .PARAMETER id
     Id of the sheet to srot rows in.
     .PARAMETER sortCriteria
-    An array of sort criteria objects. The objects shoud have 2 properties, columnId and direction (ASCENDING or DESCENDING)
+    An array of sort criteria objects. The objects should have 2 properties, columnId and direction (ASCENDING or DESCENDING)
     .PARAMETER columnId
     Id of the column to sort on for a single column sort.
-    .PARAMETER Ascending
-    Sort the column Ascending (default)
-    .PARAMETER Descending
-    Sort the column Descending
+    .PARAMETER direction
+    The direction of the sort. 
     .OUTPUTS
     Sheet object with the results of the sort operation.
+    .NOTES
+    If you are retrieving the Smartsheet to process the data within powershell it may be easier and more efficient to do the sorting within powershell.
+
+    For Example:
+
+    PS> $Sheet = Get-Smartsheet -sheetId 465987456
+    PS> $Data = $Sheet.ToArray() | Sort-Object -Property Name, HireDate.
+
     .EXAMPLE
     How to create a multi-sort sortCriteria object.
     In this example we are going to sort a Smartsheet of employee salary information by Department and Salary in descending order.
-    To create the sort Criteria, 1st create an array.
-    PS> $sortCriteria - @()
-    Then create a criteria objects from the columns collection of a sheet object named $Sheet.
-    PS> $criteria - @{
-        columnId = $Sheet.columns.Where({$_.title -eq "Department"}).ColumnId
-        direction = "ASCENDING"
-    }
-    Add this to the array.
-    $sortCriteria += $criteria
-    Create another criteria object
-    PS >$criteria = @{
-        columnId = $Sheet.Columns.Where({$_.title -eq "Salary"}).ColumnId
-        direction = "DESCENDING"
-    }
-    Add this to the array
-    PS >$sortCriteria += $criteria
+    To create the criteria create an array of hash table object.
+    PS> $sortCriteria - @(
+            @{
+                sortCriteria = @{
+                    columnId = $Sheet.columns.Where({$_.title -eq "Department"}).ColumnId
+                    direction = "ASCENDING"
+                },
+                @{
+                {
+                    columnId = $Sheet.Columns.Where({$_.title -eq "Salary"}).ColumnId
+                    direction = "DESCENDING"
+                }
+            }
+        )
     Now sort the sheet.
     PS >$SortedSheet = $sheet | Get-SortedSmartSheet -SortCriteria $sortCriteria
     #>

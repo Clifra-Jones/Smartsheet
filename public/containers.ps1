@@ -41,20 +41,21 @@ function Get-SmartsheetFolders() {
     Retrieve a list of folders.
     .DESCRIPTION
     Returns an array of subfolder object from an existing folder.
-    This will not return subfolders from the Home folder. Use Get-SMartsheetHomeFolders to get this list.
+    This will not return subfolders from the Home folder. Use Get-SmartsheetHomeFolders to get this list.
     .PARAMETER folderId
     The folder ID to retrieve subfolders from.
     .OUTPUTS
-    an array of folder objects.
+    An array of folder objects.
     #>   
 }
 
-function Add-SmartsheetFolder() {
+function New-SmartsheetFolder() {
     Param(
         [Parameter(
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('folderId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$folderName
@@ -82,7 +83,7 @@ function Add-SmartsheetFolder() {
     This function will not add folder to the home folder. Use Add-SmartsheetHomeFolder to add a folder to home.
     This function creates an empty folder. The functionality to create prepopulated folders my be included in the future.
     .PARAMETER Id
-    Id fo the folder to create the new folder in.
+    Id of the folder to create the new folder in.
     .PARAMETER folderName
     Name of the new folder.
     .OUTPUTS
@@ -112,9 +113,12 @@ function Get-SmartsheetHomeFolders() {
     $Headers = Get-Headers
     $Uri = "{0}/home/folders" -f $BaseURI
 
-    $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
-
-    return $response.result
+    try {
+        $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
+        return $response.data
+    } catch {
+        throw $_
+    }
     <#
     .SYNOPSIS
     Return folder in the home tab.
@@ -125,7 +129,7 @@ function Get-SmartsheetHomeFolders() {
     #>
 }
 
-function Add-SmartSheetHomeFolder() {
+function New-SmartSheetHomeFolder() {
     Param(
         [Parameter(Mandatory = $true)]
         [string]$folderName

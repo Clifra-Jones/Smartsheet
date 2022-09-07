@@ -1,7 +1,7 @@
 using namespace System.Collections.Generic
 
-function New-SmartsheetRow() {
-    [CmdletBinding(DefaultParameterSetName = "deflault")]
+function Add-SmartsheetRow() {
+    [CmdletBinding()]
     Param(
         [Parameter(
             Mandatory = $true,
@@ -95,11 +95,12 @@ function New-SmartsheetRow() {
     #>
 }
 
-function New-SmartsheetRows() {
+function Add-SmartsheetRows() {
     Param(
         [Parameter(
             Mandatory = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [psobject[]]$Rows,
@@ -243,7 +244,7 @@ function Remove-SmartsheetRows() {
 }
 
 function Set-SmartsheetRow() {
-    [CmdletBinding(DefaultParameterSetName = "default")]
+    [CmdletBinding()]
     Param(
         [Parameter(
             Mandatory = $true,
@@ -429,7 +430,8 @@ function Export-SmartsheetRows() {
         [string]$title,
         [string]$titleFormat,
         [switch]$includeHeaders,        
-        [string]$headerFormat
+        [string]$headerFormat,
+        [switch]$PassThru
     )
 
     # Get current sheet Columns
@@ -483,6 +485,12 @@ function Export-SmartsheetRows() {
         [void](Add-SmartsheetRow -Id $sheetId -cells $cells)
     }
 
+    End {
+        if ($PassThru) {
+            return Get-Smartsheet -id
+        }
+    }
+
     <#
     .SYNOPSIS
     Export an array and appends to a smartsheet.
@@ -495,27 +503,30 @@ function Export-SmartsheetRows() {
     .PARAMETER sheetId
     The Smartsheet ID to put the data in.
     .PARAMETER blankRowAbove
-    INsert a blank row above the data being exported.
+    Insert a blank row above the data being exported.
     .PARAMETER title
     Insert a title row above the data.
     .PARAMETER titleFormat
     A Smartsheet format string for the title. To create a format string use New-SmartsheetFormatString.
     .PARAMETER includeHeaders
-    Create a header row from the property names from the objects in the array.
+    Create a header row from the property names of the objects in the array.
     .PARAMETER headerFormat
     A Smartsheet format string for the headers. To create a format string use New-SmartsheetFormatString.
+    .PARAMETER PassThru
+    Return the sheet object with the inserted rows,
     .OUTPUTS
-    Nothing
+    If -PassThru is ommitted nothing is returned.
+    If specifying -PassThru the sheet object is returned with the inserted rows,
     .NOTES
     This function is generally used to create the equivelent of an Excel table in a Smartsheet.
-    This is sort of "out of functionality" of how Smartsheets work, but some may find it Useful.
-    You can use ths finction to append rows to an existing Smartsheet. See ecample 2 below.
+    This is sort of "out of functionality" for how Smartsheets work, but some may find it useful.
+    You can use this function to append rows to an existing Smartsheet. See example 2 below.
     .EXAMPLE 
     The following example imports the array into a smnartsheet, creates a blank row above the data and adds a title and a header row.
     (To create the format veriables use New-SmartsheetFormatString)
     PA> $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
     .EXAMPLE
-    The following example inports the array into a smartsheet appending the rows to the existing sheet without any title or headers. 
+    The following example imports the array into a smartsheet appending the rows to the existing sheet without any title or headers. 
     This can be used to append rows to the Smartsheet. No attempt is made to prevent duplicate data.
     If the number of properties in the objects is more than the existing columns, then generic columns are created.
     (To update rows based in their primary column values use the Update-Smartsheet function.)
@@ -776,9 +787,9 @@ function Move-SmartSheetRows() {
     }
     <#
     .SYNOPSIS
-    Move rows from on Smartsheet to another.
+    Move rows from one Smartsheet to another.
     .DESCRIPTION
-    Moves selected rows tro the bottom of the target sheet.
+    Moves selected rows to the bottom of the target sheet.
     .PARAMETER Id
     The source Sheet Id
     .PARAMETER targetSheetId
@@ -792,7 +803,7 @@ function Move-SmartSheetRows() {
     .PARAMETER includeDiscussions
     Include row discussions.
     .PARAMETER ignoreRowsNotFound
-    If specified, row Ids that do not exist within the source sheet does not cause an error response. If omitted, 
+    If specified, row Ids that do not exist within the source sheet do not cause an error response. If omitted, 
     specifying row Ids that do not exist within the source sheet causes an error response (and no rows are copied).
     .OUTPUTS
     An object containing the row mappings.

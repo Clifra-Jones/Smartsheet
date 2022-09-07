@@ -5,6 +5,7 @@ function Add-SmartsheetShare() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [ValidateSet(
@@ -80,6 +81,7 @@ function Get-SmartsheetShares() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id
     )
 
@@ -115,6 +117,7 @@ function Get-SmartSheetShare() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$shareid
@@ -135,7 +138,7 @@ function Get-SmartSheetShare() {
     .DESCRIPTION
     Get an individual share from a Smartsheet.
     .PARAMETER Id
-    ID of the Smartsheet.
+    Id of the Smartsheet.
     .PARAMETER shareid
     The Id of the share.
     .OUTPUTS
@@ -150,6 +153,7 @@ function Remove-SmartsheetShare() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$shareId
@@ -176,11 +180,11 @@ function Remove-SmartsheetShare() {
     }
     <#
     .SYNOPSIS
-    remove a Smartsheet share.
+    Remove a Smartsheet share.
     .PARAMETER Id
     Sheet id of the sheet to share.
     .PARAMETER shareId
-    ID of teh share to remove.
+    Id of the share to remove.
     .OUTPUTS
     Boolean indicating success or failure.
     #>
@@ -240,8 +244,12 @@ function Set-SmartsheetShare() {
 function Copy-SmartsheetShares() {
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true)]
-        [string]$sourceSheetId,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sourceSheetId')]
+        [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$targetSheetId
     )

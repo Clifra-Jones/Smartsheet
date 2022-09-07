@@ -168,35 +168,46 @@ function Export-SmartSheet() {
         To prevent Sheets of the same name being created, use the -overwriteAction and -overwriteSheetId parameters.
 
         .PARAMETER InputObject
-        Object to create the Smartsheet from
+        Array of object to create the Smartsheet from.
 
         .PARAMETER SheetName
         The name of the new Smartsheet. 
         
         .PARAMETER Folder
-        The name and path to the folder to create the Smartsheet in in the for folder1/folder2/folder3
-        folder(s) must exist.
+        The name and path to the folder to create the Smartsheet in. I.e. folder1/folder2/folder3.
+        All parent folder(s) must exist. If ommitted the sheet willbe created in the home foler.
         
         .PARAMETER headerRow
         Row to use for column headers. 
         All rows above this row are ignored.        
-        If ommitted the first row will be used. A value of -1 will crete defaule headers in the form Column1, Column1, etc.
+        If ommitted the first row will be used. A value of -1 will create default headers in the form Column1, Column1, etc.
         
         .PARAMETER primaryColumn
         The column to use as the primary column. default is the 1st column.
         
         .PARAMETER overwriteAction
-        What to do of the sheet name already exists. Choices are Replace or Rename.
+        What to do if the sheet name already exists. Choices are Replace or Rename.
         Multiple sheets can have the same name in a folder. If you omit this parameter a sheet with the same name will be created.
+        Sheets are uniquely identified by the sheet ID.
 
         .PARAMETER overwriteSheetId
         Because you can have multiple sheets with the same name (with different sheet Ids) you must provide the sheet Id for the overwrite action.
 
         .EXAMPLE
+        Create a new sheet in the home folder.
         PS> $ObjectArray | Export-Smartsheet -SheetName "MyNewSheet"
 
         .EXAMPLE
+        Create a new sheet in the folder myfolder1/mufolder2.
         PS> $objectArray | Export-Smartsheet -SheetName "MyNewSheet" -folder 'myfolder1/myfolder2'
+        .EXAMPLE
+        Overwrite an existing sheet of the same name.
+        PS> $objectArray | Export-Smartsheet -SheetName "MySheet" -overwriteAction Replace -overwriteSheetId $oldsheet.Id
+        .EXAMPLE
+        Rename an exsiting sheet and create a new sheet from the Object.
+        The renamed sheet name will be in the format originalname_yyyyMdd-HHmm.
+        PS> $objectArray | Export-Smartsheet -SheetName "MySheet" -overwriteAction Rename -overwriteSheetId $oldsheet.Id
+
     #>
 }
 
@@ -285,119 +296,3 @@ function Update-Smartsheet() {
 }
 
 # End Export Functions
-
-#Helper functions
-function New-SmartSheetFormatString() {
-    Param(
-        [ValidateSet("Arial", "Tahoma", "Times New Roman", "Verdana")]
-        [string]$fontFamily,
-        [int]$fontSize,
-        [switch]$bold,
-        [switch]$italic,
-        [switch]$underline,
-        [switch]$stikethrew,
-        [ValidateSet("left", "center", "right")]
-        [string]$horizontalAlign,
-        [ValidateSet("top", "middle", "bottom")]
-        [string]$verticalAlign,
-        [ValidateSet("Navajo White", "Black", "White", "White_2", "Lavender blush", "Sazerac", "Chilean Heath", "Panache", "Solitude", "French Lilac", "Merino", "Pastel Pink", "Navajo White_2", "Dolly", "Zanah", "French Pass", "French Lilac_2", "Almond", "Mercury", "Froly", "Chardonnay", "Yellow", "De York", "Malibu", "Light Wisteria", "Tan", "Silver", "Cinnabar", "Pizazz", "Turbo", "Chateau Green", "Denim", "Seance", "Brown", "Sonic Silver", "Tamarillo", "Trinidad", "Corn", "Forest Green", "Catalina Blue", "Purple", "Carnaby Tan")]
-        [string]$textColor,
-        [ValidateSet("Navajo White", "Black", "White", "White_2", "Lavender blush", "Sazerac", "Chilean Heath", "Panache", "Solitude", "French Lilac", "Merino", "Pastel Pink", "Navajo White_2", "Dolly", "Zanah", "French Pass", "French Lilac_2", "Almond", "Mercury", "Froly", "Chardonnay", "Yellow", "De York", "Malibu", "Light Wisteria", "Tan", "Silver", "Cinnabar", "Pizazz", "Turbo", "Chateau Green", "Denim", "Seance", "Brown", "Sonic Silver", "Tamarillo", "Trinidad", "Corn", "Forest Green", "Catalina Blue", "Purple", "Carnaby Tan")]
-        [string]$backgroundColor,
-        [ValidateSet("Navajo White", "Black", "White", "White_2", "Lavender blush", "Sazerac", "Chilean Heath", "Panache", "Solitude", "French Lilac", "Merino", "Pastel Pink", "Navajo White_2", "Dolly", "Zanah", "French Pass", "French Lilac_2", "Almond", "Mercury", "Froly", "Chardonnay", "Yellow", "De York", "Malibu", "Light Wisteria", "Tan", "Silver", "Cinnabar", "Pizazz", "Turbo", "Chateau Green", "Denim", "Seance", "Brown", "Sonic Silver", "Tamarillo", "Trinidad", "Corn", "Forest Green", "Catalina Blue", "Purple", "Carnaby Tan")]
-        [string]$taskbarColor,
-        [ValidateSet("RUB", "SEK", "AUD", "CAD", "KRW", "USD", "ARS", "NZD", "NOK", "INR", "EUR", "ILS", "SGD", "CNY", "none", "DKK", "BRL", "GBP", "HKD", "JPY", "CLP", "MXN", "CHF", "ZAR")]
-        [string]$currency,
-        [int]$decimalCount,
-        [switch]$thousandsSeparator,
-        [ValidateSet("none", "NUMBER", "CURRENCY", "PERCENT")]
-        [string]$numberFormat,
-        [switch]$textWrap,
-        [ValidateSet("LOCALE_BASED", "MMMM_D_YYYY", "MMM_D_YYYY", "D_MMM_YYYY", "YYYY_MM_DD_HYPHEN", "YYYY_MM_DD_DOT", "DWWWW_MMMM_D_YYYY", "DWWW_DD_MMM_YYYY", "DWWW_MM_DD_YYYY", "MMMM_D", "D_MMMM")]
-        [string]$dateFormat
-    )
-    $format = [ordered]@{
-        fontFamily         = $null
-        fontSize           = $null
-        bold               = $null
-        italic             = $null
-        underlined         = $null
-        strikethrough      = $null
-        horizontalAlign    = $null
-        verticalAlign      = $null
-        textcolor          = $null
-        backgroundColor    = $null
-        taskbarColor       = $null
-        currency           = 13
-        decimalCount       = 2
-        thousandsSeparator = $null
-        numberFormat       = $null
-        textWrap           = $null
-        dateFormat         = $null
-    }
-    if ($fontFamily) { $format.fontFamily = $smformat.fontFamilies[$fontFamily] }
-    if ($fontSize) { $format.fontSize = $fontSize }
-    if ($bold) { $format.bold = 1 }
-    if ($italic) { $format.italic = 1 }
-    if ($underline) { $format.underlined = 1 }
-    if ($stikethrew) { $format.strikethrough = 1 }
-    if ($horizontalAlign) { $format.horizontalAlign = $smformat.horizontalAlign[$horizontalAlign] }
-    if ($verticalAlign) { $format.verticalAlign = $smformat.verticalAlign[$verticalAlign] }
-    if ($textColor) { $format.textcolor = $smformat.colors[$textColor] }
-    if ($backgroundColor) { $format.backgroundColor = $smformat.colors[$backgroundColor] }
-    if ($taskbarColor) { $format.backgroundColor = $smformat.colors[$backgroundColor] }
-    if ($currency) { $format.currency = $smformat.currency[$currency] }
-    if ($decimalCount) { $format.decimalCount = $decimalCount }
-    if ($thousandsSeparator) { $format.thousandsSeparator = 1 }
-    if ($numberFormat) { $format.numberFormat = $smformat.numberFormats[$numberFormat] }
-    if ($textWrap) { $format.textWrap = 1 }
-    if ($dateFormat) { $format.dateFormat = $smformat.dateFormats[$dateFormat] }
-    
-    $formatString = $format.values -join ","
-    return $formatString
-
-<#
-    .SYNOPSIS 
-    Creates a SMartsheet format string.
-    .DESCRIPTION
-    Creates a smartsheet format string to be used with column, row, and cell formatting.
-    .PARAMETER fontFamily
-    Sets the Font Family to use.
-    .PARAMETER fontSize
-    Sets the font size.
-    .PARAMETER bold
-    Sets to font to bold.
-    .PARAMETER italic
-    Sets the font to italic
-    .PARAMETER underline
-    Sets the font to underline
-    .PARAMETER stikethrew
-    Sets the font to strikethrough.
-    .PARAMETER horizontalAlign
-    Set the horizontal alignment
-    .PARAMETER verticalAlign
-    Set the vertical alignment
-    .PARAMETER textColor
-    Select the Text Color. Supports : autocomplete.
-    .PARAMETER backgroundColor
-    Select the Background color. Supports : autocomplete.
-    .PARAMETER taskbarColor 
-    Select the Taskbar color. Supports : autocomplete.
-    .PARAMETER currency
-    Select the Currency Symbol. Supports : autocomplete.
-    .PARAMETER decimalCount
-    Set the decimal count
-    .PARAMETER thousandsSeparator
-    Sets the thousands separator.
-    .PARAMETER numberFormat
-    Sets the Number format.
-    .PARAMETER textWrap
-    Sets textwrap.
-    .PARAMETER dateFormat
-    sets the date format. Supports : autocomplete.
-    .OUTPUTS
-    A string representing a Smartsheet formatting string.
-#>
-}
-
-# End Helper functions

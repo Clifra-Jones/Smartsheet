@@ -77,6 +77,7 @@ ScriptsToProcess = @('./public/public.ps1')
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
     'Set-APIKey',
+    'New-Smartsheet'
     'Get-ServerInfo',
     'Get-Smartsheets',
     'Get-Smartsheet',
@@ -90,9 +91,10 @@ FunctionsToExport = @(
     'Get-SmartsheetColumns',
     'Add-SmartsheetColumn',
     'Add-SmartsheetColumns',
+    'New-SmartsheetColumn'
     'Remove-SmartsheetColumn',
-    'New-SmartsheetRow',
-    'New-SmartsheetRows',
+    'Add-SmartsheetRow',
+    'Add-SmartsheetRows',
     'Remove-SmartsheetRow',
     'Remove-SmartsheetRows',
     'Set-SmartsheetRow',
@@ -101,10 +103,10 @@ FunctionsToExport = @(
     'Get-SmartsheetFolder',
     'Remove-SmartsheetFolder'
     'Get-SmartsheetFolders',
-    'Add-SmartsheetFolder',
+    'New-SmartsheetFolder',
     'Get-SmartsheetHome',
     'Get-SmartsheetHomeFolders',
-    'Add-SmartsheetHomeFolder',
+    'New-SmartsheetHomeFolder',
     'Export-SmartSheet',
     'New-SmartsheetCell',
     'New-HyperLink',
@@ -124,15 +126,15 @@ FunctionsToExport = @(
     'Copy-SmartsheetAttachments',
     'Copy-SmartsheetShares',
     'Get-SmartsheetDiscussions',
-    'New-SmartsheetDiscussion',
+    'Add-SmartsheetDiscussion',
     'Remove-SmartsheetDiscussion',
     'Get-SmartsheetRowDiscussions',
-    'New-SMartsheetRowDiscussion',
+    'Add-SmartsheetRowDiscussion',
     'Copy-SmartsheetDiscussions',
     'Get-SmartSheetComment',
     'Set-SmartSheetComment'
     'Remove-SmartsheetComment',
-    'New-SmartsheetComment',
+    'Add-SmartsheetComment',
     'Add-SmartSheetCellImage',
     'Get-SmartsheetImageUrl',
     'Update-Smartsheet', 

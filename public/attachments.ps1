@@ -181,7 +181,9 @@ function Get-SmartsheetAttachment() {
     Returns the attachment as a byte array.
     .OUTPUTS
     If -saveAs and -asByteArray are not specified returns a smartsheet attachment object.
-    if -saveAs ia specified returns nothing.
+
+    if -saveAs is specified returns nothing.
+
     if -asByteArray is specified an array of bytes is returned.
     #>
 }
@@ -223,8 +225,12 @@ function Remove-SmartSheetAttachment() {
 
 function Copy-SmartsheetAttachments() {
     Param(
-        [Parameter(Mandatory = $true)]
-        [string]$sourceSheetId,
+        [Parameter(
+            Mandatory = $true,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [Alias('sourceSheetId')]
+        [string]$Id,
         [Parameter(Mandatory = $true)]
         [string]$targetSheetId,
         [Parameter(Mandatory = $true)]
