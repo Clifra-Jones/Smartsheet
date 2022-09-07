@@ -28,3 +28,31 @@ The account is limited to 2 users.
 ### [Module Referrence](./referrence.html)
 
 The above link is a full module referrence that includes syntax, parameters and examples.
+
+## Installation
+
+To install the module, clone the repository into your module folder.
+
+### User Scope
+
+Change to your user module directory.
+
+For **Windows**:
+>cd %USERPROFILE%\Documents\Powershell\Modules
+For **Linux/Mac**:
+>cd ~/.local/share/powershell/Modules
+
+Clone the repository.
+>git clone https://github.com/Clifra-Jones/Smartsheet.git
+
+### System Scope
+
+Change to the system module directory.
+
+for **Windows**:
+>cd %PROGRAMFILES%\PowerShell\Modules
+For **Linux/Mac**:
+>cd /usr/local/share/powershell/MOdules
+
+Clone the repository.
+>git clone https://github.com/Clifra-Jones/Smartsheet.git

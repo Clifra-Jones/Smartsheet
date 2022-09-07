@@ -30,10 +30,10 @@ CompanyName = 'Balfour Beatty US'
 Copyright = '(c) Cliff Williams. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'This module allows you to interact with the Smartsheet REST API using powershell.'
 
 # Minimum version of the PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '7.0'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
