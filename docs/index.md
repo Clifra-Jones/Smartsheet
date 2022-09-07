@@ -13,7 +13,7 @@ This module includes most of the functions to interact with Sheets. Functions fo
 
 OAuth authentication has not been implemented at this time. You must use an Access token generated from your Smartsheet account.
 To generate an API Access Token click on the Account Icon at the bottom of the left sidebar. Select Personal Settings, select API Access and then Generate
-an Access Token. Save the Access token in a save place (a folder ONLY you have avvedd to) you will not be able to retrieve the token after this. If you lose your token you will need to generate a new one.
+an Access Token. Save the Access token in a save place (a folder ONLY you have access to) you will not be able to retrieve the token after this. If you lose your token you will need to generate a new one.
 
 ## Developer Account
 
@@ -27,4 +27,4 @@ The account is limited to 2 users.
 
 ### [Module Referrence](./referrence.html)
 
-The above link si a full module referrence that includes syntax, parameters and examples.
+The above link is a full module referrence that includes syntax, parameters and examples.
