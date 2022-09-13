@@ -17,7 +17,7 @@ an Access Token. Save the Access token in a safe place (a folder ONLY you have a
 
 ## Developer Account
 
-This module is still in an early stage of development. Even if the functions are working properly you can alter Smartsheets with unintended concequences.
+This module is still in an early stage of development. Even if the functions are working properly you can alter Smartsheets with unintended consequences.
 Do not modify production Smartsheets unless you fully understand what you are doing.
 
 It is a best practice to create a developers account and test your processes there before working on your production sheets.
@@ -25,9 +25,9 @@ It is a best practice to create a developers account and test your processes the
 To create a developer account go to [Register as a Developer](https://developers.smartsheet.com/register) and create an account using a different email address than you use with your production account. Here you will have access to all the Developer tools and can create and modify Smartsheets.
 The account is limited to 2 users.
 
-### [Module Referrence](./referrence.html)
+### [Module Reference](./referrence.html)
 
-The above link is a full module referrence that includes syntax, parameters and examples.
+The above link is a full module reference that includes syntax, parameters and examples.
 
 ## Installation
 
@@ -79,14 +79,14 @@ git clone https://github.com/Clifra-Jones/Smartsheet.git
 
 ## Usage
 
-The primary usage for htis module is to create or consume Smartsheets within powershell.
+The primary usage for this module is to create or consume Smartsheets within powershell.
 
 **Warning**
 : This module can be very dangerous and you can cause serious damage to a production Smartsheet if you are not careful and do not fully understand what you are are doing. See the section above about creating a Developers account to test your processes.
 
-### Get a Smartsheet as an array of powershell object
+### Get a Smartsheet as an array of powershell objects
 
-to retrieve a Smartsheet and convert the data into an array of powershell objects use the [**Get-Smartsheet](https://clifra-jones.github.io/Smartsheet/referrence.html#Copy-Smartsheet) function.
+To retrieve a Smartsheet and convert the data into an array of powershell objects use the [**Get-Smartsheet](https://clifra-jones.github.io/Smartsheet/referrence.html#Copy-Smartsheet) function.
 
 Use the ToArray function to return an array of Powershell objects from the Sheet object.
 
@@ -98,7 +98,7 @@ $array = $sheet.ToArray()
 ### Export Powershell array of objects to a Smartsheet
 
 To export an array of powershell object into a Smartsheet you use the [**Export-Smartsheet**](https://clifra-jones.github.io/Smartsheet/referrence.html#Export-SmartSheet) function.
-This funtion will **ALWAYS** create a new Smartsheet, even if a sheet of the same name exist in the target folder.
+This function will **ALWAYS** create a new Smartsheet, even if a sheet of the same name exist in the target folder.
 Smartsheets are uniquely identified by the Smartsheet's ID, not the name.
 
 ```powershell
@@ -128,10 +128,10 @@ You can also rename a smartsheet with this function by providing the -overwriteS
 
 You can append/insert a powershell array into a Smartsheet using the [**Export-SmartsheetRows**](https://clifra-jones.github.io/Smartsheet/referrence.html#Export-SmartsheetRows) function.
 
-This function is generally used to create the equivelent of an Excel table in a Smartsheet. This is sort of "out of functionality" for how Smartsheets works, but some may find it Useful. You can also use this finction to append rows to an existing Smartsheet.
+This function is generally used to create the equivalent of an Excel table in a Smartsheet. This is sort of "out of functionality" for how Smartsheets works, but some may find it Useful. You can also use this function to append rows to an existing Smartsheet.
 
-The following example imports the array into a smnartsheet, creates a blank row above the data and adds a title and a header row.
-(To create the format veriables use New-SmartsheetFormatString)
+The following example imports the array into a Smartsheet, creates a blank row above the data and adds a title and a header row.
+(To create the format variables use New-SmartsheetFormatString)
 
 ```powershell
 $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
@@ -159,7 +159,7 @@ If condition 1 isn't met, an error will be thrown.
 if Condition 2 isn't met, unpredictable results may occur.
 
 ```powershell
-$MyArray | Update-Smartsheeet -SheetId MySheet.Id
+$MyArray | Update-Smartsheet -SheetId MySheet.Id
 ```
 
 ### Add a new column to a SmartSheet
@@ -187,4 +187,4 @@ The following example grants the user with email johndoe@example.com EDITOR acce
 $Sheet | Add-SmartsheetShare -AccessLevel EDITOR -SendEmail -Email johndoe@example.com -message "This is the employee data we discussed"
 ```
 
-There are many more function that can add/remove/update sheets, rows, and columns. Manage Attachments, discussions, and commments. And add remove folders and more.
+There are many more function that can add/remove/update sheets, rows, and columns. Manage Attachments, discussions, and comments. And add remove folders and more.
