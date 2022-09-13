@@ -46,13 +46,13 @@ cd %USERPROFILE%\Documents\Powershell\Modules
 For **Linux/Mac**:
 
 ```bash
->cd ~/.local/share/powershell/Modules
+cd ~/.local/share/powershell/Modules
 ```
 
 Clone the repository.
 
 ```bash
->git clone https://github.com/Clifra-Jones/Smartsheet.git
+git clone https://github.com/Clifra-Jones/Smartsheet.git
 ```
 
 ### System Scope
@@ -62,19 +62,19 @@ Change to the system module directory.
 for **Windows**:
 
 ```bash
->cd %PROGRAMFILES%\PowerShell\Modules
+cd %PROGRAMFILES%\PowerShell\Modules
 ```
 
 For **Linux/Mac**:
 
 ```bash
->cd /usr/local/share/powershell/MOdules
+cd /usr/local/share/powershell/MOdules
 ```
 
 Clone the repository.
 
 ```bash
->git clone https://github.com/Clifra-Jones/Smartsheet.git
+git clone https://github.com/Clifra-Jones/Smartsheet.git
 ```
 
 ## Usage
@@ -108,7 +108,7 @@ $MyArray | Export-Smartsheet -sheetName "MyNewSheet"
 If you want to overwrite an existing sheet you must retrieve its Id and supply that using the -overwriteSheetId parameter and also provider the -overwriteAction parameter with the value 'Replace'.
 
 ```powershell
->$oldSheet = Get-Smartsheet -Name "MySheet"
+$oldSheet = Get-Smartsheet -Name "MySheet"
 ```
 
 This assumes there is only 1 sheet named "MySheet" in the home folder.
@@ -134,7 +134,7 @@ The following example imports the array into a smnartsheet, creates a blank row 
 (To create the format veriables use New-SmartsheetFormatString)
 
 ```powershell
-> $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
+$Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
 ```
 
 The following example exports the array into a smartsheet appending the rows to the existing sheet without any title or headers.
@@ -169,13 +169,13 @@ To add a new column to a Smartsheet use the [**Add-SmartsheetColumn**](https://c
 The following example adds a new column to the end of the columns. Then updates the existing sheet object.
 
 ```powershell
->$Sheet = $Sheet | Add-SmartsheetColumn -Title "MyNewColumn" -Type TEXT_NUMBER -Passthru
+$Sheet = $Sheet | Add-SmartsheetColumn -Title "MyNewColumn" -Type TEXT_NUMBER -Passthru
 ```
 
 To insert a column at a certain position use the -index parameter. The column will be inserted at that position shifting all columns after that to the right.
 
 ```powershell
->$Sheet = $Sheet | Add-SmartsheetColumn -title "MyNewColumn" -Type TEXT_NUMBER -index 3 -PassThru
+$Sheet = $Sheet | Add-SmartsheetColumn -title "MyNewColumn" -Type TEXT_NUMBER -index 3 -PassThru
 ```
 
 ### Add a new share to a Smartsheet
@@ -184,7 +184,7 @@ A share allows you to grant access to a Smartsheet to a user in your organizatio
 The following example grants the user with email johndoe@example.com EDITOR access to the smartsheet and emails him informing that the sheet has been shared with him. (Assumes we already have a sheet object in $Sheet)
 
 ```powershell
->$Sheet | Add-SmartsheetShare -AccessLevel EDITOR -SendEmail -Email johndoe@example.com -message "This is the employee data we discussed"
+$Sheet | Add-SmartsheetShare -AccessLevel EDITOR -SendEmail -Email johndoe@example.com -message "This is the employee data we discussed"
 ```
 
 There are many more function that can add/remove/update sheets, rows, and columns. Manage Attachments, discussions, and commments. And add remove folders and more.
