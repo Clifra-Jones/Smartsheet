@@ -38,26 +38,44 @@ To install the module, clone the repository into your module folder.
 Change to your user module directory.
 
 For **Windows**:
->cd %USERPROFILE%\Documents\Powershell\Modules
+
+```dos
+cd %USERPROFILE%\Documents\Powershell\Modules
+```
 
 For **Linux/Mac**:
+
+```bash
 >cd ~/.local/share/powershell/Modules
+```
 
 Clone the repository.
+
+```bash
 >git clone https://github.com/Clifra-Jones/Smartsheet.git
+```
 
 ### System Scope
 
 Change to the system module directory.
 
 for **Windows**:
+
+```bash
 >cd %PROGRAMFILES%\PowerShell\Modules
+```
 
 For **Linux/Mac**:
+
+```bash
 >cd /usr/local/share/powershell/MOdules
+```
 
 Clone the repository.
+
+```bash
 >git clone https://github.com/Clifra-Jones/Smartsheet.git
+```
 
 ## Usage
 
@@ -83,13 +101,13 @@ To export an array of powershell object into a Smartsheet you use the [**Export-
 This funtion will **ALWAYS** create a new Smartsheet, even if a sheet of the same name exist in the target folder.
 Smartsheets are uniquely identified by the Smartsheet's ID, not the name.
 
-```PowerShell
+```powershell
 $MyArray | Export-Smartsheet -sheetName "MyNewSheet"
 ```
 
 If you want to overwrite an existing sheet you must retrieve its Id and supply that using the -overwriteSheetId parameter and also provider the -overwriteAction parameter with the value 'Replace'.
 
-```PowerShell
+```powershell
 >$oldSheet = Get-Smartsheet -Name "MySheet"
 ```
 
@@ -97,7 +115,7 @@ This assumes there is only 1 sheet named "MySheet" in the home folder.
 
 Then create the new sheet overwriting the old sheet.
 
-```PowerShell
+```powershell
 $MyArray | Export-Smartsheet -sheetName "MySheet" -overwriteSheetId $oldsheet.id -overwriteAction Replace
 ```
 
@@ -115,7 +133,7 @@ This function is generally used to create the equivelent of an Excel table in a 
 The following example imports the array into a smnartsheet, creates a blank row above the data and adds a title and a header row.
 (To create the format veriables use New-SmartsheetFormatString)
 
-```Powershell
+```powershell
 > $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
 ```
 
@@ -124,7 +142,7 @@ This can be used to append rows to the Smartsheet. No attempt is made to prevent
 If the number of properties in the objects is more than the existing columns, then generic columns are created.
 (To update rows based in their primary column values use the [**Update-Smartsheet**](https://clifra-jones.github.io/Smartsheet/referrence.html#Update-Smartsheet) function.)
 
-```PowerShell
+```powershell
 $Array | Export-SmartsheetRows
 ```
 
@@ -140,7 +158,7 @@ This function makes the following assumptions:
 If condition 1 isn't met, an error will be thrown.
 if Condition 2 isn't met, unpredictable results may occur.
 
-```PowerShell
+```powershell
 $MyArray | Update-Smartsheeet -SheetId MySheet.Id
 ```
 
@@ -150,13 +168,13 @@ To add a new column to a Smartsheet use the [**Add-SmartsheetColumn**](https://c
 
 The following example adds a new column to the end of the columns. Then updates the existing sheet object.
 
-```PowerShell
+```powershell
 >$Sheet = $Sheet | Add-SmartsheetColumn -Title "MyNewColumn" -Type TEXT_NUMBER -Passthru
 ```
 
 To insert a column at a certain position use the -index parameter. The column will be inserted at that position shifting all columns after that to the right.
 
-```PowerShell
+```powershell
 >$Sheet = $Sheet | Add-SmartsheetColumn -title "MyNewColumn" -Type TEXT_NUMBER -index 3 -PassThru
 ```
 
@@ -165,7 +183,7 @@ To insert a column at a certain position use the -index parameter. The column wi
 A share allows you to grant access to a Smartsheet to a user in your organization.
 The following example grants the user with email johndoe@example.com EDITOR access to the smartsheet and emails him informing that the sheet has been shared with him. (Assumes we already have a sheet object in $Sheet)
 
-```Powershell
+```powershell
 >$Sheet | Add-SmartsheetShare -AccessLevel EDITOR -SendEmail -Email johndoe@example.com -message "This is the employee data we discussed"
 ```
 
