@@ -1,3 +1,5 @@
+![Balfour Logo](https://www.balfourbeattyus.com/Balfour-dev.allata.com/media/content-media/2017-Balfour-Beatty-Logo-Blue.svg?ext=.svg)
+
 # Powershell Module for the Smartsheet API
 
 This module allows you to interact with the Smartsheet REST API using powershell.  
@@ -25,7 +27,7 @@ It is a best practice to create a developers account and test your processes the
 To create a developer account go to [Register as a Developer](https://developers.smartsheet.com/register) and create an account using a different email address than you use with your production account. Here you will have access to all the Developer tools and can create and modify Smartsheets.
 The account is limited to 2 users.
 
-### [Module Reference](./referrence.html)
+### [Module Reference](https://clifra-jones.github.io/Smartsheet/referrence.html)
 
 The above link is a full module reference that includes syntax, parameters and examples.
 
@@ -81,8 +83,8 @@ git clone https://github.com/Clifra-Jones/Smartsheet.git
 
 The primary usage for this module is to create or consume Smartsheets within powershell.
 
-**Warning**
-: This module can be very dangerous and you can cause serious damage to a production Smartsheet if you are not careful and do not fully understand what you are are doing. See the section above about creating a Developers account to test your processes.
+!!! note "**Warning**"
+    This module can be very dangerous and you can cause serious damage to a production Smartsheet if you are not careful and do not fully understand what you are doing. See the section above about creating a Developers account to test your processes.
 
 ### Get a Smartsheet as an array of powershell objects
 
@@ -119,8 +121,8 @@ Then create the new sheet overwriting the old sheet.
 $MyArray | Export-Smartsheet -sheetName "MySheet" -overwriteSheetId $oldsheet.id -overwriteAction Replace
 ```
 
-**Note**
-: This action creates a second sheet named "MySheet", copies the shares, discussions and comments from the old sheet and then deletes the old sheet. The old sheet can be recovered from the Deleted Items container on the Smartsheet web site.
+!!! note
+    This action creates a second sheet named "MySheet", copies the shares, discussions and comments from the old sheet and then deletes the old sheet. The old sheet can be recovered from the Deleted Items container on the Smartsheet web site.
 
 You can also rename a smartsheet with this function by providing the -overwriteSheetID and the -overwriteAction with the 'Rename' value.
 

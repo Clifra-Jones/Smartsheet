@@ -82,7 +82,7 @@ git clone https://github.com/Clifra-Jones/Smartsheet.git
 The primary usage for this module is to create or consume Smartsheets within powershell.
 
 **Warning**
-: This module can be very dangerous and you can cause serious damage to a production Smartsheet if you are not careful and do not fully understand what you are are doing. See the section above about creating a Developers account to test your processes.
+: This module can be very dangerous and you can cause serious damage to a production Smartsheet if you are not careful and do not fully understand what you are doing. See the section above about creating a Developers account to test your processes.
 
 ### Get a Smartsheet as an array of powershell object
 
