@@ -224,11 +224,6 @@ function Add-SmartsheetColumn() {
             Mandatory = $true,
             ParameterSetName = "props"
         )]
-        [string]$ColumnId,
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "props"
-        )]
         [int]$Index,
         [Parameter(ParameterSetName = 'props')]
         [string]$title,
@@ -314,8 +309,6 @@ function Add-SmartsheetColumn() {
     Id of the Smartsheet containing the column.
     .PARAMETER column
     A Smartsheet column object. Cannot be used with column property parameters.
-    .PARAMETER ColumnId
-    Id of teh column to update.
     .PARAMETER Index
     Index if the column to update.
     .PARAMETER title

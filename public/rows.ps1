@@ -435,7 +435,7 @@ function Export-SmartsheetRows() {
     )
 
     # Get current sheet Columns
-    Begin{
+    Begin {
         $Columns = Get-SmartsheetColumns -SheetId $sheetId   
 
         if ($blankRowAbove) {
@@ -448,32 +448,39 @@ function Export-SmartsheetRows() {
             $cells += $cell
             [void](Add-SmartsheetRow -Id $sheetId -cells $cells)
         }
+        $HeadersNotSet = $true
+    }   
 
-        
-    }
-    Process{
-        $PropCount = $inputObject.PSObject.Properties.Count
+    Process {
+        $PropCount = $inputObject.PSObject.Properties.Name.Count
         # Get the number of properties in the input object
         # if needed add columns to the sheet.
         if ($PropCount -gt $Columns.Count) {
             $n = $PropCount - $Columns.Count
             1..$n | ForEach-Object {
-                $index = (columns.count -1) + $_
-                Add-SmartsheetColumn -Id $sheetId -index $index -type:TEXT_NUMBER
+                $index = ($Columns.count -1) + $_
+                $title = "Column_$Index"
+                [void](Add-SmartsheetColumn -Id $sheetId -index $index -type:TEXT_NUMBER -title $title)
             }
         }
 
+        #Get the updated columns
+        $Columns = Get-SmartsheetColumns -SheetId $sheetId
+
         if ($includeHeaders){
             # Add the headings
-            $propNames = ($inputObject[0].psObject.Properties).Name
-            $cells = @()
-            foreach ($propName in $propNames) {
-                $i = $PropNames.IndexOf($propName)
-                $cell = new-SmartsheetCell -columnId $Columns[$i].Id -value $propName -format $headerFormat
-                $cells += $cell
+            if ($HeadersNotSet) {
+                $propNames = ($inputObject[0].psObject.Properties).Name
+                $cells = @()
+                foreach ($propName in $propNames) {
+                    $i = $PropNames.IndexOf($propName)
+                    $cell = new-SmartsheetCell -columnId $Columns[$i].Id -value $propName -format $headerFormat
+                    $cells += $cell
+                }
+                [void](Add-SmartsheetRow -Id $sheetId -cells $cells)     
+                $HeadersNotSet = $False
             }
-            [void](Add-SmartsheetRow -Id $sheetId -cells $cells)        
-        }
+       }
 
         $values = ($inputObject.PSObject.Properties).value
         $cells = @()
@@ -487,7 +494,7 @@ function Export-SmartsheetRows() {
 
     End {
         if ($PassThru) {
-            return Get-Smartsheet -id
+            return Get-Smartsheet -id $sheetId
         }
     }
 
@@ -521,16 +528,19 @@ function Export-SmartsheetRows() {
     This function is generally used to create the equivelent of an Excel table in a Smartsheet.
     This is sort of "out of functionality" for how Smartsheets work, but some may find it useful.
     You can use this function to append rows to an existing Smartsheet. See example 2 below.
+    Data will always be added starting at the left most column. If you wanted to insert data into a Smartsheet
+    starting at a certain column you would need to use the Add-SmartSheetRow function inserting blank cells into the beginning of
+    the cell array.
     .EXAMPLE 
-    The following example imports the array into a smnartsheet, creates a blank row above the data and adds a title and a header row.
-    (To create the format veriables use New-SmartsheetFormatString)
-    PA> $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
+    The following example imports the array into a Smartsheet, creates a blank row above the data and adds a title and a header row.
+    (To create the format variables use New-SmartsheetFormatString)
+    $Array | Export-SmartsheetRows -id $Sheet.Id -blankRowAbove -title "My Title" -TitleFormat $titleFormat -includeHeaders -headerFormat $headerFormat
     .EXAMPLE
     The following example imports the array into a smartsheet appending the rows to the existing sheet without any title or headers. 
     This can be used to append rows to the Smartsheet. No attempt is made to prevent duplicate data.
     If the number of properties in the objects is more than the existing columns, then generic columns are created.
     (To update rows based in their primary column values use the Update-Smartsheet function.)
-    PS> $Array | Export-SmartsheetRows 
+    $Array | Export-SmartsheetRows -id $Sheet.id
     #>
 }
 

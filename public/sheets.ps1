@@ -1,95 +1,73 @@
 using namespace System.Collections.Generic
 
 function New-Smartsheet() {
-    [CmdletBinding(DefaultParameterSetName = 'default')]
+    [CmdletBinding()]
     Param(
         [Alias('folderId','workspaceId')]
         [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "container"
+            ValueFromPipelineByPropertyName = $true
         )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "container_w_columns"
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ValueFromPipelineByPropertyName = $true,
-            ParameterSetName = "container_w_template"
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "container_w_template2"
-        )]
-        [string]$id,
+        [string]$Id,
         [ValidateSet('home','folder','workspace')]
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "container"
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "container_w_columns"
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "container_w_template"
-        )]
-        [Parameter(
-            Mandatory = $true,
-            ParameterSetName = "container_w_template2"
-        )]
-        [string]$containerType,
+        [string]$ContainerType = 'home',
         [Parameter(Mandatory = $true)]
-        [string]$sheetName,        
-        [Parameter(ParameterSetName = "columns")]
-        [Parameter(ParameterSetName = "container_w_columns")]
-        [psobject[]]$columns,        
-        [Parameter(ParameterSetName = 'template')]
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template")]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [string]$templateId,
-        [Parameter(ParameterSetName = 'template')]
-        [Parameter(ParameterSetName = "container_w_template")]
-        [switch]$includeAll,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeAttachments,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeCellLinks,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeData,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeDiscussions,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeFilters,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeForms,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeRuleReceipts,
-        [Parameter(ParameterSetName = 'template2')]
-        [Parameter(ParameterSetName = "container_w_template2")]
-        [switch]$includeRules 
+        [string]$SheetName,
+        [ValidateScript(
+            {
+                if (-not $_ -and ($templateId)) {
+                    throw "Parameter Columns cannot be used with parameter TemplateId."
+                } else {
+                    $true
+                }
+            }
+        )]        
+        [psobject[]]$Columns,
+        [ValidateScript(
+            {
+                if (-not $_ -and ($Columns)) {
+                    throw "Parameter TemplateId cannot be used with parameter Columns."
+                }
+            }
+        )]
+        [string]$TemplateId,
+        [ValidateScript(
+            {
+                if ($_) {
+                    if (
+                        $null -ne $IncludeAttachments -or
+                        $null -ne $includeCellLinks -or 
+                        $null -ne $includeData -or 
+                        $null -ne $includeDiscussions -or
+                        $null -ne $IncludeFilters -or
+                        $null -ne $includeForms -or
+                        $null -ne $IncludeRuleReceipts -or
+                        $Null -ne $IncludeRules
+                    ) {
+                        throw "Parameter Include all must not be used with other include parameters."
+                    } else {
+                        $true
+                    }
+                } 
+            }
+        )]
+        [switch]$IncludeAll,
+        [switch]$IncludeAttachments,
+        [switch]$IncludeCellLinks,
+        [switch]$IncludeData,
+        [switch]$IncludeDiscussions,
+        [switch]$IncludeFilters,
+        [switch]$IncludeForms,
+        [switch]$IncludeRuleReceipts,
+        [switch]$IncludeRules 
     )
 
-    if (-not $containerType) {$containerType = 'home'}
-
-    switch ($containerType) {
+    switch ($ContainerType) {
         'folder' {
             $Uri = "{0}/folders/{1}/sheets" -f $BaseURI, $id
         }
         'workspace' {
             $Uri = "{0}/workspaces/{1}/sheets" -f $BaseURI, $Id
-            if ($includeAll) {
+            if ($IncludeAll) {
                 $includes = "attachments", "cellLinks", "data", "discussions", "filters", "forms", "ruleRecipients", "rules"
                 $Uri = "{0}?include={1}" -f $Uri, ($includes -join ",")
             } else {
@@ -145,7 +123,48 @@ function New-Smartsheet() {
     } catch {
         throw $_
     }
-
+    <#
+    .SYNOPSIS
+    Create a new Smartsheet
+    .DESCRIPTION
+    Creates a sheet from scratch or from the specified template.
+    .PARAMETER Id
+    Folder Id where you can create sheets, sights, reports, templates, and other folders.
+    .PARAMETER ContainerType
+    Type of container. Either 'home','folder', or'workspace'.
+    .PARAMETER SheetName
+    Name of the new Sheet
+    .PARAMETER 
+    .PARAMETER Columns
+    An array of column objects.
+    .PARAMETER TemplateId
+    The Id of a sheet to use as a template.
+    .PARAMETER IncludeAll
+    Include all elements from the template sheet. cannot be used with other Include parameters.
+    .PARAMETER IncludeAttachments
+    Include attachments
+    .PARAMETER IncludeCellLinks
+    Include cell links
+    .PARAMETER IncludeData
+    Include data
+    .PARAMETER IncludeDiscussions
+    Include discussions
+    .PARAMETER IncludeFilters
+    Include filters
+    .PARAMETER IncludeForms
+    Include forms
+    .PARAMETER IncludeRuleReceipts
+    Include receipts
+    .PARAMETER IncludeRules
+    Include rules
+    .OUTPUTS
+    Result object containing a Sheet object for newly created sheet, corresponding to what was specified in the request.
+    .NOTES
+    Sheet names ARE NOT unique in folders. You can create a sheet with the same name as another sheet. 
+    This function does not check for name conflicts in the target folder.
+    You should check for the existance of a sheet of the same name using the Get-Smartsheets function.
+    #>
+    
 }
 function Get-Smartsheets () {
     <#
@@ -333,7 +352,7 @@ function Get-Smartsheet () {
     Note: There can be multiple sheets with the same name. Using the Sheet ID is more accurate!
     The object returned has an additional method ToArray(), this method returns an array of PowerShell objects based on the sheet rows and columns.
     .PARAMETER id
-    Sheet ID, cannot be used with the Name parameter.
+    Folder ID, cannot be used with the Name parameter.
     .PARAMETER Name
     Sheet Name, cannot be used with the id parameter.
     .PARAMETER level
