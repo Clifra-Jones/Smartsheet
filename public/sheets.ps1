@@ -166,6 +166,7 @@ function New-Smartsheet() {
     #>
     
 }
+
 function Get-Smartsheets () {
     <#
     .DESCRIPTION
@@ -186,7 +187,8 @@ function Get-Smartsheets () {
     .OUTPUTS
     AN array of Smartsheet objects.
     #>
-}
+} 
+
 
 function Get-Smartsheet () {    
     Param(

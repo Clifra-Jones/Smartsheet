@@ -120,7 +120,7 @@ function Get-SmartSheetShare() {
         [Alias('sheetId')]
         [string]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$shareid
+        [string]$shareId
     )
 
     Begin {
@@ -128,7 +128,10 @@ function Get-SmartSheetShare() {
     }
 
     Process {
-        $Uri = "{0}/sheets/{1}/shares/{2}" -f $BaseURI, $Id, $sheetId
+        $Uri = "{0}/sheets/{1}/shares" -f $BaseURI, $Id
+        if ($shareId) {
+            $Uri = "[0}/{1}" -f $shareId
+        }
         $response = Invoke-RestMethod -Method Get -Uri $Uri -Headers $Headers
         return $response
     }

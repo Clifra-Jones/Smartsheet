@@ -9,11 +9,13 @@ function New-SmartSheetCell() {
         [psobject]$image,
         [psobject]$linkInFromCell,
         [psobject[]]$linksOutFromCell,
+        [Parameter(Mandatory)]
         [psobject]$value
     )
 
     $properties = @{
         columnId = $columnId
+        value = $value
     }
     if ($conditionalFormat) { $properties.Add("conditionalFormat", $conditionalFormat) }
     if ($format) { $properties.Add("format", $format) }
@@ -22,7 +24,6 @@ function New-SmartSheetCell() {
     if ($image) { $properties.Add("image", $image) }
     if ($linkInFromCell) { $properties.Add("linkInFromCell", $linkInFromCell) }
     if ($linksOutFromCell) { $properties.Add("linksOutFromCell", $linksOutFromCell) }
-    if ($value) { $properties.Add("value", $value) }
     $cell = [PSCustomObject]$properties
     return $cell
     <#

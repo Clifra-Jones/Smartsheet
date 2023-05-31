@@ -40,7 +40,7 @@ function Set-SmartsheetAPIKey () {
         New-Item -Path $configPath -ItemType:Directory | Out-Null
     }
 
-    $objConfig | ConvertTo-Json | Out-File -FilePath "$configPath/config.json"
+    $objConfig | ConvertTo-Json | Out-File -FilePath "$configPath/config.json" -Force
 
     <#
     .SYNOPSIS
@@ -220,13 +220,16 @@ function Update-Smartsheet() {
         )]
         [psObject]$InputObject,
         [Parameter(Mandatory = $true)]
-        [string]$sheetId
+        [string]$sheetId        
     )
 
     $sheet = Get-Smartsheet -id $sheetId
 
     # Verify columns, column names must match properties of the objects in the array.
     $columns = $sheet.columns
+
+    $PrimaryColumn = ($Columns.Where({$_.Primary -eq $true}))[0]
+    $pcIndex = $columns.IndexOf($PrimaryColumn)
 
     $properties = $input[0].PSObject.properties | Select-Object Name
 
@@ -247,34 +250,39 @@ function Update-Smartsheet() {
         foreach ($prop in $props) {
             $index = $props.indexOf($prop)
             $column = $sheet.columns[$index]
-            if ($column.type = 'PICKLIST') {
-                if ($column.options) {
-                    if ($prop.value -notin $column.options) {
-                        $options = $column.options
-                        $options += $prop.value
-                        $col = @{
-                            index = $column.index
-                            type = $column.type
-                            options = $options
+            switch ($column.type) {
+                'PICKLIST' {
+                    if ($column.options) {
+                        if ($prop.value -notin $column.options) {
+                            $options = $column.options
+                            $options += $prop.value
+                            $col = @{
+                                index = $column.index
+                                type = $column.type
+                                options = $options
+                            }
+                            $sheet = Set-SmartsheetColumn -Id $sheet.id -ColumnId $column.id -column $col -PassThru
                         }
-                        $sheet = Set-SmartsheetColumn -Id $sheet.id -ColumnId $column.id -column $col -PassThru
                     }
+                }
+                'CHECKBOX' {
+                    $prop.value = [System.Convert]::ToBoolean($prop.value)
                 }
             }
             $cell = New-SmartSheetCell -columnId $column.id -value $prop.value
             $cells += $cell
         }
-        # Does the row exist based on the 1st column
-        $row = $sheet.rows.Where({$_.cells[0].value -eq $props[0].value})
+        # Does the row exist based on the primary Column column
+        $row = $sheet.rows.Where({$_.cells[$pcIndex].value -eq $props[$pcIndex].value})
         if ($row) {
             $sheet = Set-SmartsheetRow -id $sheetId -rowId $row.Id -Cells $cells -PassThru
         } else {       
             $index = $input.IndexOf($object)
             if ($index -lt ($sheet.rows.Count -1)) {
                 $siblingRowId = $sheet.rows[$index].id
-                $sheet = New-SmartsheetRow -sheetId $sheet.id -siblingRowId $siblingRowId -cells $cells -location:below -PassThru
+                $sheet = Add-SmartsheetRow -sheetId $sheet.id -siblingRowId $siblingRowId -cells $cells -location:below -PassThru
             } else {
-                $sheet = New-SmartsheetRow -sheetId $sheet.id -cells $cells -PassThru
+                $sheet = Add-SmartsheetRow -sheetId $sheet.id -cells $cells -PassThru
             }
         }
     }
@@ -284,9 +292,8 @@ function Update-Smartsheet() {
     .DESCRIPTION
     Update a Smartsheet from an array of powershell objects.
     1. The number and names of the columns is the same as the properties in the object in the array.
-    2. The primary column is the first column in the sheet and the column values are unique.
+    2. The primary column is used to identify rows to be updated and must be unique.
     If condition 1 isn't met, and error will be thrown.
-    if Condition 2 isn't met, unpredictable results may occur.
     .PARAMETER InputObject
     An array of powershell objects.
     .PARAMETER sheetId
