@@ -173,7 +173,7 @@ function Get-Smartsheets () {
     Retrieves all the sheets the user has access to.
     #>
 
-    $Uri = "{0}/sheets" -f $BaseURI
+    $Uri = "{0}/sheets?includeAll=true" -f $BaseURI
     $Headers = Get-Headers
 
     $response = Invoke-RestMethod -Method Get -Uri $Uri -Headers $Headers
