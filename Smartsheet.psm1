@@ -252,22 +252,28 @@ function Update-Smartsheet() {
             $column = $sheet.columns[$index]
             switch ($column.type) {
                 'PICKLIST' {
-                    if ($column.options) {
-                        if ($prop.value -notin $column.options) {
-                            $options = $column.options
-                            $options += $prop.value
-                            $col = @{
-                                index = $column.index
-                                type = $column.type
-                                options = $options
+                    if ($prop.value) {
+                        if ($column.options) {                        
+                            if ($prop.value -notin $column.options) {
+                                $options = $column.options
+                                $options += $prop.value
+                                $column.options = $options
+                                $sheet = Set-SmartsheetColumn -Id $sheet.id -ColumnId $column.id -column $column -PassThru
                             }
-                            $sheet = Set-SmartsheetColumn -Id $sheet.id -ColumnId $column.id -column $col -PassThru
                         }
                     }
                 }
                 'CHECKBOX' {
-                    $prop.value = [System.Convert]::ToBoolean($prop.value)
+                    If ($prop.value) { 
+                        $Prop.value = [System.Convert]::ToBoolean($prop.value) 
+                     } else {
+                        $prop.value = $false
+                     }
+                    #$prop.value = [System.Convert]::ToBoolean($prop.value)
                 }
+            }
+            if ($null -eq $Prop.value) {
+                $Prop.value = " "
             }
             $cell = New-SmartSheetCell -columnId $column.id -value $prop.value
             $cells += $cell
