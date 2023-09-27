@@ -1,7 +1,7 @@
 
 $script:BaseURI = "https://api.smartsheet.com/2.0"
 
-$global:SSFormat = $ServerInfo | ConvertFrom-Json
+#$global:SSFormat = $ServerInfo | ConvertFrom-Json
 
 #Private function
 function Read-Config () {
