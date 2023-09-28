@@ -27,7 +27,7 @@ It is a best practice to create a developers account and test your processes the
 To create a developer account go to [Register as a Developer](https://developers.smartsheet.com/register) and create an account using a different email address than you use with your production account. Here you will have access to all the Developer tools and can create and modify Smartsheets.
 The account is limited to 2 users.
 
-### [Module Reference](https://clifra-jones.github.io/Smartsheet/referrence.html)
+### [Module Reference](https://clifra-jones.github.io/Smartsheet/reference.html)
 
 The above link is a full module reference that includes syntax, parameters and examples.
 
@@ -88,7 +88,7 @@ The primary usage for this module is to create or consume Smartsheets within pow
 
 ### Get a Smartsheet as an array of powershell objects
 
-To retrieve a Smartsheet and convert the data into an array of powershell objects use the [**Get-Smartsheet](https://clifra-jones.github.io/Smartsheet/referrence.html#Copy-Smartsheet) function.
+To retrieve a Smartsheet and convert the data into an array of powershell objects use the [**Get-Smartsheet](https://clifra-jones.github.io/Smartsheet/reference.html#Copy-Smartsheet) function.
 
 Use the ToArray function to return an array of Powershell objects from the Sheet object.
 
@@ -128,7 +128,7 @@ You can also rename a smartsheet with this function by providing the -overwriteS
 
 ### Export a Powershell array as a set of Smartsheet rows into an existing Smartsheet
 
-You can append/insert a powershell array into a Smartsheet using the [**Export-SmartsheetRows**](https://clifra-jones.github.io/Smartsheet/referrence.html#Export-SmartsheetRows) function.
+You can append/insert a powershell array into a Smartsheet using the [**Export-SmartsheetRows**](https://clifra-jones.github.io/Smartsheet/reference.html#Export-SmartsheetRows) function.
 
 This function is generally used to create the equivalent of an Excel table in a Smartsheet. This is sort of "out of functionality" for how Smartsheets works, but some may find it Useful. You can also use this function to append rows to an existing Smartsheet.
 
@@ -142,7 +142,7 @@ $Array | Export-SmartsheetRows -blankRowAbove -title "My Title" -TitleFormat $ti
 The following example exports the array into a smartsheet appending the rows to the existing sheet without any title or headers.
 This can be used to append rows to the Smartsheet. No attempt is made to prevent duplicate data.
 If the number of properties in the objects is more than the existing columns, then generic columns are created.
-(To update rows based in their primary column values use the [**Update-Smartsheet**](https://clifra-jones.github.io/Smartsheet/referrence.html#Update-Smartsheet) function.)
+(To update rows based in their primary column values use the [**Update-Smartsheet**](https://clifra-jones.github.io/Smartsheet/reference.html#Update-Smartsheet) function.)
 
 ```powershell
 $Array | Export-SmartsheetRows
@@ -150,7 +150,7 @@ $Array | Export-SmartsheetRows
 
 ### Update the rows in a smartsheet based on thier primary column value.
 
-To update rows in a Smartsheet based on their primary column value use the [**Update-Smartsheet**](https://clifra-jones.github.io/Smartsheet/referrence.html#Update-Smartsheet) function.
+To update rows in a Smartsheet based on their primary column value use the [**Update-Smartsheet**](https://clifra-jones.github.io/Smartsheet/reference.html#Update-Smartsheet) function.
 
 This function makes the following assumptions:
 
@@ -166,7 +166,7 @@ $MyArray | Update-Smartsheet -SheetId MySheet.Id
 
 ### Add a new column to a SmartSheet
 
-To add a new column to a Smartsheet use the [**Add-SmartsheetColumn**](https://clifra-jones.github.io/Smartsheet/referrence.html#Add-SmartsheetColumn) function.
+To add a new column to a Smartsheet use the [**Add-SmartsheetColumn**](https://clifra-jones.github.io/Smartsheet/reference.html#Add-SmartsheetColumn) function.
 
 The following example adds a new column to the end of the columns. Then updates the existing sheet object.
 

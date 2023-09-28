@@ -48,7 +48,7 @@ function Set-SmartsheetAPIKey () {
     
     .DESCRIPTION
     Creates a file in the user profile folder in the .smartsheet folder named config.json.
-    This file contains the users Meraki API Key.
+    This file contains the users Smaretsheet API Token.
 
     .PARAMETER APIKey
     The Smartsheet API Access Token.
