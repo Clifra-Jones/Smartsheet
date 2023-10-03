@@ -143,7 +143,14 @@ FunctionsToExport = @(
     'Send-SmartsheetRowsViaEmail',
     'Copy-SmartSheetRows',
     'Move-SmartSheetRows',
-    'TestParm'
+    'Get-SmartsheetWorkspaces',
+    'Add-SmartsheetWorkspace',
+    'Get-SmartsheetWorkspace',
+    'Remove-SmartSheetWorkspace',
+    'Set-SmartSheetWorkspace'
+    'Copy-SmartsheetWorkspace',
+    'Get-SmartsheetWorkspaceFolders',
+    'Add-SmartsheetWorkspaceFolder'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

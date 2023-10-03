@@ -1,4 +1,4 @@
-
+using namespace System.Collections.Generic
 function Remove-SmartsheetFolder() {
     Param(
         [Parameter(Mandatory = $true)]
@@ -26,16 +26,63 @@ function Remove-SmartsheetFolder() {
 }
 
 function Get-SmartsheetFolders() {
+    [CmdletBinding(DefaultParameterSetName='default')]    
     Param(
-        [Parameter(Mandatory = $true)]
-        [string]$folderId
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName
+        )]
+        [Alias('folderId')]
+        [string]$Id,
+        [Parameter(
+            DontShow,
+            ValueFromPipelineByPropertyName)]
+        [string]$Name,        
+        [switch]$recurse
     )
 
-    $Headers = Get-Headers
-    $Uri = "{0}/folders/{0}/folders" -f $BaseURI, $folderId
+    Begin {
+        $Headers = Get-Headers
 
-    $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
-    return $response 
+        $folderList = [List[psobject]]::New()
+        function Get-Subfolders() {
+            Param (
+                [string]$SubFolderId,
+                [string]$name
+            )
+
+            $SubFolders = Get-SmartsheetFolders -folderId $SubfolderId
+            foreach ($Subfolder in $Subfolders) {
+                $Subfolder | Add-Member -MemberType NoteProperty -Name 'Fullname' -Value ("{0}/{1}" -f $Name, $Subfolder.Name)
+                $folderList.Add($subfolder)
+                Get-Subfolders -SubFolderId $Subfolder.Id -name $Subfolder.name
+            }
+        }
+    }
+
+    Process {
+        $Uri = "{0}/folders/{1}/folders" -f $BaseURI, $Id
+
+        try {
+            $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
+            if ($recurse) {
+                # Get the Name of the root folder
+                $folders = $response.data
+                foreach ($folder in $folders) {  
+                    $folder | Add-Member -MemberType NoteProperty -Name FullName -Value $folder.name 
+                    $folderList.Add($folder)                        
+                    $Subfolders = (Get-Subfolders -SubFolderId $folder.Id -name $folder.name)
+                }
+            
+                #return $FolderList.ToArray()
+                return $folderList
+            } else {
+                return $response.data
+            }
+        } catch {
+            throw $_
+        }
+    }
     <#
     .SYNOPSIS
     Retrieve a list of folders.
@@ -44,6 +91,17 @@ function Get-SmartsheetFolders() {
     This will not return subfolders from the Home folder. Use Get-SmartsheetHomeFolders to get this list.
     .PARAMETER folderId
     The folder ID to retrieve subfolders from.
+    .PARAMETER recurse
+    This will return a list including all subfolders. This adds a new 'FullName'property which will be the full path of the folder from the folderID provided or the home folder.
+    The returned array will look like this.
+                    id name      permalink                                                                   FullName
+                    -- ----      ---------                                                                   --------
+        7306313035212676 folder2   https://app.smartsheet.com/folders/V5g7j44M52jf9GgHgJcM2XPC8VP7mrq33VXCg741 folder2
+        5582828558673796 folder3   https://app.smartsheet.com/folders/fPpQw2qh24hFcVg9jRjCQqxH73Q85QVR243x77w1 folder2/folder3
+        6462437860894596 folder4   https://app.smartsheet.com/folders/C73GCm6M4hxcQ3f38cr3x57hwGGjpqp4mWr8mGx1 folder3/folder4
+        2079509634672516 folder3.1 https://app.smartsheet.com/folders/5P4JJfwF9Jj6rFvXJ94Gw9gG7rFm9cxM3QrxCxp1 folder2/folder3.1
+
+    You can filter the results by comparing the full or partial path to the FullName property.
     .OUTPUTS
     An array of folder objects.
     #>   
@@ -124,6 +182,8 @@ function Get-SmartsheetHomeFolders() {
     Return folder in the home tab.
     .DESCRIPTION
     Gets a list of folders in your Home tab. The list contains an abbreviated Folder object for each folder.
+    You cannot get a recursive list from the home folder. To get a recursive list of subfolders you must use the Get-SMartsheetFolders
+    function and specify a folder Id of one of the folder in this list.
     .OUTPUTS
     An array of abbreviated folder objects.
     #>
@@ -167,10 +227,16 @@ function Get-SmartsheetFolder() {
     )
 
     $Headers = Get-Headers
-    $Uri = "{0}/folders/{0}" -f $BaseURI, $folderId
+    $Uri = "{0}/folders/{1}" -f $BaseURI, $folderId
 
-    $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers
-    return $response    
+    
+    try {
+        
+        $response = Invoke-RestMethod -Method GET -Uri $Uri -Headers $Headers       
+        return $response
+    } catch {
+        throw $_
+    }
     <#
     .SYNOPSIS
     Returns a folder object.

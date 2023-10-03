@@ -24,6 +24,7 @@ foreach ($mime in $mimes) {
 . $PSScriptRoot/public/attachments.ps1
 . $PSScriptRoot/public/discussions.ps1
 . $PSScriptRoot/public/search.ps1
+. $PSScriptRoot/public/workspaces.ps1
 
 # Setup Functions
 function Set-SmartsheetAPIKey () {
@@ -70,44 +71,22 @@ function Export-SmartSheet() {
         [psobject]$InputObject,
         [Parameter(Mandatory = $true)]
         [string]$SheetName,
-        [string]$Folder,
+        [Parameter(ParameterSetName='folder')] 
+        [string]$FolderId,
+        [Parameter(ParameterSetName='workspace')]
+        [string]$WorkspaceId,
         [int]$headerRow,
         [int]$primaryColumn,
         [ValidateSet(
             "Replace",
             "Rename"
         )]
-        [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'exists2')]
         [string]$overwriteAction,
-        [Parameter(ParameterSetName = 'exists', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'exists2')]
         [string]$overwriteSheetId
 
     )
     
     $Headers = Get-Headers -ContentType 'text/csv' -ContentDisposition 'attachment'
-    $folderId = $null
-    if ($folder) {
-        if ($folder.Contains("/")) {                
-            # Get an object that contains a nested list of objects & folders.
-            $Uri = "{0}/home" -f $BaseURI
-            $rootfolders = Get-SmartsheetHome
-            # Split the folder path into its parts.
-            $Folders = $folder.Split("/")
-            $currentFolder = $rootfolders
-            $folders | ForEach-Object {
-                $currentFolder = $currentFolder.Where($_.Name -eq $_)                        
-            }
-            #$FolderId = $currentFolder.Id
-        }
-        else {
-            #get a folder off the root
-            $rootfolders = Get-SmartsheetHomeFolders
-            $currentFolder = $folders.Where({ $_.name -eq $Folder })
-        }
-        $folderId = $currentFolder.Id
-    }
 
     # convert input to csv        
     $inputCsv = $input | ConvertTo-Csv
@@ -116,6 +95,8 @@ function Export-SmartSheet() {
     $body = $encoder.GetBytes($inputString)
     If ($FolderId) {
         $Uri = "{0}/folders/{1}/sheets/import?sheetName={2}" -f $BaseURI, $folderId, $SheetName
+    } elseIf ($WorkspaceId) {
+        $Uri = "{0}/workspaces/{1}/sheets/import?sheetName={2}" -f $BaseURI, $WorkspaceId, $SheetName
     }
     else {
         $Uri = "{0}/sheets/import?sheetName={1}" -f $BaseURI, $SheetName
@@ -173,9 +154,17 @@ function Export-SmartSheet() {
         .PARAMETER SheetName
         The name of the new Smartsheet. 
         
-        .PARAMETER Folder
-        The name and path to the folder to create the Smartsheet in. I.e. folder1/folder2/folder3.
-        All parent folder(s) must exist. If ommitted the sheet willbe created in the home foler.
+        .PARAMETER FolderId
+        The folder ID of the folder to create the Smartsheet in. This can either be a folder fromthe home location or a folder in a Workspace.
+        Use the Get-SmartsheetFolder or Get-SmartsheetWorkspaceFolders to get the Folder Id.
+
+        .PARAMETER WorkspaceId
+        The workspace to create the Smartsheet in. Use the Get-SmartsheetWorkspaces function to get the Workspace Id.
+        This will create the sheet in the root of the workspace. To create a sheet in a folder in a workspace, 
+        specify the folder ID of the folder inside the workspace. 
+        At this time you cannot get a recursive list of all folders in a workspace, You can get a recursive list of all subfolders of a workspace folder.
+        Use the Get-SmartsheetFolders function, specifying the top level folder ID and the Recursive property.
+
         
         .PARAMETER headerRow
         Row to use for column headers. 
@@ -196,10 +185,16 @@ function Export-SmartSheet() {
         .EXAMPLE
         Create a new sheet in the home folder.
         PS> $ObjectArray | Export-Smartsheet -SheetName "MyNewSheet"
-
         .EXAMPLE
-        Create a new sheet in the folder myfolder1/mufolder2.
+        Create a new sheet in the folder.
+        $Folder = Get-SmartsheetHomeFolders -Recurse | Where-object {$_.FullName like "Inventory/Westcoast"}
         PS> $objectArray | Export-Smartsheet -SheetName "MyNewSheet" -folder 'myfolder1/myfolder2'
+        .EXAMPLE
+        Create a new sheet in a workspace folder.
+        $Workspace = Get-SmartsheetWorkspaces | Where-Object {$_.Name -eq 'Accounting'}
+        $APFolder = Get-SMartsheetWorkspaceFolders -WorkspaceId $Workspace.Id | Where-Object ($_.Name -eq 'Accounts Payable')
+        $PaymentsFolder = Get-SmartsheetFolders -FolderId $APFolder.Id -Recurse | Where-Object {$_.FullName -eq "Microsoft/Payments"}
+        $ObjectArray | Export-Smartsheet -Sheetname 'July Payments' -folder $PaymentsFolder.Id
         .EXAMPLE
         Overwrite an existing sheet of the same name.
         PS> $objectArray | Export-Smartsheet -SheetName "MySheet" -overwriteAction Replace -overwriteSheetId $oldsheet.Id

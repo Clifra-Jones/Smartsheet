@@ -168,11 +168,7 @@ function New-Smartsheet() {
 }
 
 function Get-Smartsheets () {
-    <#
-    .DESCRIPTION
-    Retrieves all the sheets the user has access to.
-    #>
-
+ 
     $Uri = "{0}/sheets?includeAll=true" -f $BaseURI
     $Headers = Get-Headers
 
