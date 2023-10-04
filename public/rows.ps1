@@ -136,7 +136,7 @@ function Add-SmartsheetRows() {
     .PARAMETER Rows
     An array of smartsheet row objects.
     .PARAMETER PassThru
-    Return thenupdate sheet.
+    Return then update sheet.
     .OUTPUTS
     An array of the newly created rows.
     If PassThru is specified returns the updated sheet object.
@@ -183,7 +183,7 @@ function Remove-SmartsheetRow() {
     .PARAMETER PassThru
     Return the updated sheet.
     .OUTPUTS
-    True is delete was successfull.
+    True is delete was successful.
     if PassThru is specified returns the updated sheet object.
     #>
 }
@@ -234,11 +234,11 @@ function Remove-SmartsheetRows() {
     .PARAMETER rowIds
     An array of rowIDs to be remove.
     .PARAMETER ignoreRowsNotFound
-    Supress errors if row not found.
+    Suppress errors if row not found.
     .PARAMETER PassThru
     Returns the updated sheet.
     .OUTPUTS
-    True if successfull.
+    True if successful.
     if PassThru is specified, return the updated smartsheet object.
     #>
 }
@@ -326,7 +326,7 @@ function Set-SmartsheetRow() {
     .PARAMETER PassThru
     Return the updated sheet
     .OUTPUTS
-    Boolean indicating suncess or failure.
+    Boolean indicating success or failure.
     if PassThru is specified, return the updated sheet object.
     #>
 }
@@ -522,10 +522,10 @@ function Export-SmartsheetRows() {
     .PARAMETER PassThru
     Return the sheet object with the inserted rows,
     .OUTPUTS
-    If -PassThru is ommitted nothing is returned.
+    If -PassThru is omitted nothing is returned.
     If specifying -PassThru the sheet object is returned with the inserted rows,
     .NOTES
-    This function is generally used to create the equivelent of an Excel table in a Smartsheet.
+    This function is generally used to create the equivalent of an Excel table in a Smartsheet.
     This is sort of "out of functionality" for how Smartsheets work, but some may find it useful.
     You can use this function to append rows to an existing Smartsheet. See example 2 below.
     Data will always be added starting at the left most column. If you wanted to insert data into a Smartsheet
@@ -612,7 +612,8 @@ function Send-SmartsheetRowsViaEmail() {
     An array of column Ids to be included.
     If the columnIds attribute of the MultiRowEmail object is specified as an array of column Ids, those specific columns are included.
     If the columnIds attribute of the MultiRowEmail object is omitted, all columns except hidden columns shall be included.
-    If the columnIds attribute of the MultiRowEmail object is specified as empty, no columns shall be included. (NOTE: In this case, either includeAttachments=true or includeDiscussions=true must be specified.)
+    If the columnIds attribute of the MultiRowEmail object is specified as empty, no columns shall be included. 
+    (NOTE: In this case, either includeAttachments=true or includeDiscussions=true must be specified.)
     .PARAMETER To
     An array of recipients.
     .PARAMETER subject

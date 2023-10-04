@@ -155,7 +155,7 @@ function Export-SmartSheet() {
         The name of the new Smartsheet. 
         
         .PARAMETER FolderId
-        The folder ID of the folder to create the Smartsheet in. This can either be a folder fromthe home location or a folder in a Workspace.
+        The folder ID of the folder to create the Smartsheet in. This can either be a folder from the home location or a folder in a Workspace.
         Use the Get-SmartsheetFolder or Get-SmartsheetWorkspaceFolders to get the Folder Id.
 
         .PARAMETER WorkspaceId
@@ -169,7 +169,7 @@ function Export-SmartSheet() {
         .PARAMETER headerRow
         Row to use for column headers. 
         All rows above this row are ignored.        
-        If ommitted the first row will be used. A value of -1 will create default headers in the form Column1, Column1, etc.
+        If omitted the first row will be used. A value of -1 will create default headers in the form Column1, Column1, etc.
         
         .PARAMETER primaryColumn
         The column to use as the primary column. default is the 1st column.
@@ -199,7 +199,7 @@ function Export-SmartSheet() {
         Overwrite an existing sheet of the same name.
         PS> $objectArray | Export-Smartsheet -SheetName "MySheet" -overwriteAction Replace -overwriteSheetId $oldsheet.Id
         .EXAMPLE
-        Rename an exsiting sheet and create a new sheet from the Object.
+        Rename an existing sheet and create a new sheet from the Object.
         The renamed sheet name will be in the format originalname_yyyyMdd-HHmm.
         PS> $objectArray | Export-Smartsheet -SheetName "MySheet" -overwriteAction Rename -overwriteSheetId $oldsheet.Id
 

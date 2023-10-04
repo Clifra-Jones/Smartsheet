@@ -347,7 +347,7 @@ function New-SmartSheetCommentAttachment() {
     .PARAMETER Type
     The type of Url.
     .PARAMETER subType
-    The URL subtype. Only cvalid for EGNYTE and GOOGLE_DRIVE types.
+    The URL subtype. Only valid for EGNYTE and GOOGLE_DRIVE types.
     .PARAMETER description
     The description of the URL.
     .PARAMETER name

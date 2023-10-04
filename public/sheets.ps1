@@ -162,7 +162,7 @@ function New-Smartsheet() {
     .NOTES
     Sheet names ARE NOT unique in folders. You can create a sheet with the same name as another sheet. 
     This function does not check for name conflicts in the target folder.
-    You should check for the existance of a sheet of the same name using the Get-Smartsheets function.
+    You should check for the existence of a sheet of the same name using the Get-Smartsheets function.
     #>
     
 }
@@ -344,7 +344,7 @@ function Get-Smartsheet () {
     }
     <#
     .SYNOPSIS
-    Retrieve an indifivual sheet.
+    Retrieve an individual sheet.
     .DESCRIPTION
     Retrieves an individual sheet by either the sheet ID or the Name.
     Note: There can be multiple sheets with the same name. Using the Sheet ID is more accurate!
@@ -402,7 +402,7 @@ function Get-Smartsheet () {
     A array of row Ids on which to filter the rows included in the result.
     .NOTES
     When retrieving a smartsheet by name there is always the chance that there are multiple sheets with the same name in a folder.
-    If more than ione sheet have the same name, you will be prompted to select the sheet yu want from a list. 
+    If more than one sheet have the same name, you will be prompted to select the sheet yu want from a list. 
     The list will show Sheet name and modified date.
     .OUTPUTS
     A Smartsheet sheet object.
@@ -552,13 +552,13 @@ function Copy-Smartsheet() {
     The folder or workspace Id to copy the sheet to.
     .PARAMETER containerType
     One of 'folder', workspace' or 'home' if containerType - 'home' containerId must be omitted.
-    'home' is the default value is ommitted.
+    'home' is the default value is omitted.
     .PARAMETER includeAll
     Include all elements of the sheet
     .PARAMETER includeAttachments
     Include attachments
     .PARAMETER includeCellLinks
-    Inlcude cell links.
+    Include cell links.
     .PARAMETER includeFormatting
     Include formatting
     .PARAMETER includefilters
@@ -585,9 +585,9 @@ function Rename-SmartSheet() {
         )]
         [string]$Id,
         [Parameter(Mandatory = $true)]
-        [String]$newSheetname
+        [String]$NewSheetName
     )
-    Copy-Smartsheet -Id $Id -newSheetName $newSheetname -includeAll
+    Copy-Smartsheet -Id $Id -newSheetName $NewSheetName -includeAll
     Remove-Smartsheet -Id $Id
     <#
     .SYNOPSIS 
@@ -702,7 +702,7 @@ function Get-SortedSmartsheet() {
     .DESCRIPTION
     Sort the rows in a smartsheet.
     .PARAMETER id
-    Id of the sheet to srot rows in.
+    Id of the sheet to sort rows in.
     .PARAMETER sortCriteria
     An array of sort criteria objects. The objects should have 2 properties, columnId and direction (ASCENDING or DESCENDING)
     .PARAMETER columnId

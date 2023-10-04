@@ -139,7 +139,7 @@ function New-SmartsheetFolder() {
     .DESCRIPTION
     Add a folder to an existing Smartsheet folder. 
     This function will not add folder to the home folder. Use Add-SmartsheetHomeFolder to add a folder to home.
-    This function creates an empty folder. The functionality to create prepopulated folders my be included in the future.
+    This function creates an empty folder. The functionality to create pre-populated folders my be included in the future.
     .PARAMETER Id
     Id of the folder to create the new folder in.
     .PARAMETER folderName
@@ -160,7 +160,8 @@ function Get-SmartsheetHome() {
     .SYNOPSIS
     Return all home objects.
     .DESCRIPTION
-    Gets a nested list of all Home objects, including dashboards, folders, reports, sheets, templates, and workspaces, as shown on the "Home" tab.
+    Gets a nested list of all Home objects, including dashboards, folders, reports, sheets, templates, and workspaces, 
+    as shown on the "Home" tab.
     .OUTPUTS
     A nested array of home objects.
     #>
@@ -210,7 +211,7 @@ function New-SmartSheetHomeFolder() {
     }
     <#
     .SYNOPSIS
-    Create a folder int he hoome tab.
+    Create a folder int he home tab.
     .DESCRIPTION
     Create a new empty folder in the home tab.
     .PARAMETER folderName

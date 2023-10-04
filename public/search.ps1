@@ -35,8 +35,24 @@ function Search-SmartsheetAccount() {
     }
     <#
     .SYNOPSIS
-    Searches all sheets that the user can access, for the specified text.
-
+    Searches Smartsheets for the specified text.
+    .DESCRIPTION
+    This function searches all sheets that the user has access to for the tes provided.
+    .PARAMETER searchText
+    The search text to search for.
+    .PARAMETER exact
+    Use an exact search for the given text. Without this switch, all words provided will be searched for.
+    .PARAMETER personalWorkspaces
+    Restrict the search to the users personal workspaces.
+    .PARAMETER modifiedSince
+    Restrict the search to sheets modified after this date.
+    .PARAMETER favoriteFlag
+    Indicates which returned items are favorites. favorite -- dashboards, folders, reports, sheets, templates, and workspaces 
+    will have the property favorite: true parentObjectFavorite -- attachments, discussions, summary fields, and rows will 
+    have the property parentObjectFavorite: true
+    .PARAMETER scopes
+    If search fails, try using an array for each type of this list of search filters.
+    "attachments" "cellData" "comments" "folderNames" "reportNames" "sheetNames" "sightNames" "summaryFields" "templateNames" "workspaceNames"
     #>
 }
 
@@ -81,7 +97,6 @@ function Search-Smartsheet() {
     .PARAMETER exact
     Match text exactly.
     .OUTPUTS
-    An array of search results.
-    
+    An array of search results.    
     #>
 }

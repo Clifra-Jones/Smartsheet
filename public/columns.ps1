@@ -20,13 +20,13 @@ function Get-SmartsheetColumn () {
     .SYNOPSIS
     Retrieve a Smartsheet column.
     .DESCRIPTION
-    Retrieve a smartcheet column from a specified smartsheet.
+    Retrieve a Smartsheet column from a specified smartsheet.
     .PARAMETER Id
     The Id of the sheet to retrieve the column.
     .PARAMETER ColumnId
     The column Id to retrieve.
     .OUTPUTS
-    A smartsheet column ofbject.
+    A smartsheet column object.
 
     #>
 }
@@ -355,7 +355,7 @@ function Add-SmartsheetColumn() {
     To add a new colum to a Smartsheet.
     PS> $newColumn = $Sheet | Add-SmartsheetColumn -title "Title" -type:TEXT_NUMBER -description 'My new column'
     .EXAMPLE
-    To insert a new column at position 4 (columns after position 4 are shifted to the right and thier index incremented).
+    To insert a new column at position 4 (columns after position 4 are shifted to the right and their index incremented).
     PS> $newColumn = $Sheet | Add-SmartsheetColumn -title "Asset" -type:TEXT_NUMBER -Description "Fixed asset" -index 4
     .Example 
     Add a new column with contact objects.
@@ -374,7 +374,7 @@ function Add-SmartsheetColumn() {
 }
 
 function Add-SmartsheetColumns() {
-    [CmdletBinding(DefaultParameterSetName = 'allq')]
+    [CmdletBinding(DefaultParameterSetName = 'all')]
     Param(
         [Parameter(
             Mandatory = $true,
@@ -460,7 +460,7 @@ function Remove-SmartsheetColumn() {
     .PARAMETER PassThru
     Return the updated sheet.
     .OUTPUTS
-    Boolean indicating success or failue of the operation.
+    Boolean indicating success or failure of the operation.
     if PassThru is provided returns the updated sheet object.
     #>    
 }

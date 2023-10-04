@@ -34,7 +34,7 @@ function New-SmartSheetCell() {
     .PARAMETER conditionalFormat
     A conditional format object.
     .PARAMETER format
-    A format descriptor sctring.
+    A format descriptor string.
     .PARAMETER formula
     A formula string
     .PARAMETER hyperlink
@@ -91,7 +91,7 @@ function New-Hyperlink() {
 function New-CellLink() {
     Param(
         [Parameter(Mandatory = $true)]
-        [string]$sheetid,
+        [string]$sheetId,
         [Parameter(Mandatory = $true)]
         [string]$sheetName,
         [Parameter(Mandatory = $true)]
@@ -111,7 +111,7 @@ function New-CellLink() {
     .SYNOPSIS
     Creates a new cell link object.
     This method only creates the CellLink object that can be later inserted into a Cell. Set the LinkInFromCell property to this object.
-    .PARAMETER sheetid
+    .PARAMETER sheetId
     Target Sheet Id.
     .PARAMETER sheetName
     Target Sheet name.
@@ -133,7 +133,7 @@ function New-SmartSheetFormatString() {
         [switch]$bold,
         [switch]$italic,
         [switch]$underline,
-        [switch]$stikethrew,
+        [switch]$stikethrough,
         [ValidateSet("left", "center", "right")]
         [string]$horizontalAlign,
         [ValidateSet("top", "middle", "bottom")]
@@ -178,7 +178,7 @@ function New-SmartSheetFormatString() {
     if ($bold) { $format.bold = 1 }
     if ($italic) { $format.italic = 1 }
     if ($underline) { $format.underlined = 1 }
-    if ($stikethrew) { $format.strikethrough = 1 }
+    if ($stikethrough) { $format.strikethrough = 1 }
     if ($horizontalAlign) { $format.horizontalAlign = $smformat.horizontalAlign[$horizontalAlign] }
     if ($verticalAlign) { $format.verticalAlign = $smformat.verticalAlign[$verticalAlign] }
     if ($textColor) { $format.textcolor = $smformat.colors[$textColor] }
@@ -209,7 +209,7 @@ function New-SmartSheetFormatString() {
     Sets the font to italic
     .PARAMETER underline
     Sets the font to underline
-    .PARAMETER stikethrew
+    .PARAMETER stikethrough
     Sets the font to strikethrough.
     .PARAMETER horizontalAlign
     Set the horizontal alignment

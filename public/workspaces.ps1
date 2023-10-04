@@ -10,6 +10,10 @@ function Get-SmartsheetWorkspaces() {
     } catch {
         Throw $response.message
     }
+    <#
+    .SYNOPSIS
+    Retrieve a list of Smartsheet Workspaces.    
+    #>
 }
 
 function Add-SmartsheetWorkspace() {
@@ -17,7 +21,6 @@ function Add-SmartsheetWorkspace() {
     Param(
         [Parameter(Mandatory)]
         [string]$Name,
-        [string]$PermaLink,
         [psobject[]]$Folders,
         [psobject[]]$Reports,
         [psobject[]]$Sheets,
@@ -168,10 +171,6 @@ function Add-SmartsheetWorkspace() {
         name = $Name
     }
 
-    if ($PermaLink) {
-        $payload.Add("permalink", $PermaLink)
-    }
-
     if ($Folders) {
         $payload.Add("folders", $Folders)
     }
@@ -200,6 +199,56 @@ function Add-SmartsheetWorkspace() {
     } catch {
         Throw $response.message
     }
+    <#
+    .SYNOPSIS
+    Add a new Smartsheet Workspace.
+    .DESCRIPTION
+    Add a new Smartsheet Workspace to the given account using the settings provided.
+    .PARAMETER Name
+    The name of the Workspace.
+    .PARAMETER Folders
+    An array of folder objects to add to the Workspace.
+    .PARAMETER Reports
+    An array of report objects to add to the Workspace.
+    .PARAMETER Sheets
+    An array of sheet objects to add to the Workspace.
+    .PARAMETER Sights
+    An array dashboards to add to the Workspace.
+    .PARAMETER Templates
+    An array templates to add to the Workspace.
+    .PARAMETER IncludeAll
+    Include all of the below elements in the Workspace.
+    .PARAMETER IncludeAttachments
+    Include attachments.
+    .PARAMETER IncludeBrands
+    Include brands.
+    .PARAMETER IncludeCellLinks
+    Include cell links.
+    .PARAMETER IncludeData
+    Include data.
+    .PARAMETER IncludeDiscussions
+    Include discussions.
+    .PARAMETER IncludeFilters
+    Include filters.
+    .PARAMETER IncludeForms
+    Include forms.
+    .PARAMETER IncludeRuleRecipients
+    Include recipients.
+    .PARAMETER IncludeRules
+    Include rules.
+    .PARAMETER IncludeShares
+    Include shares.
+    .PARAMETER ExcludeCellLinksRemap
+    Exclude cell link remaps.
+    .PARAMETER ExcludeReportsRemap
+    Exclude reports remaps.
+    .PARAMETER ExcludeSheetHyperlinkRemap
+    Exclude Sheet Hyperlink remaps.
+    .PARAMETER ExcludeSightsRemap
+    Exclude dashboard remaps.
+    .OUTPUTS
+    Object containing a Workspace object for the newly created workspace.
+    #>
 }
 
 function Get-SmartsheetWorkspace() {
@@ -209,7 +258,7 @@ function Get-SmartsheetWorkspace() {
         [string]$WorkspaceId,
         [switch]$IncludeSource,   
         [switch]$IncludeDistributionLink,
-        [switch]$InlcudeOwnerInfo,
+        [switch]$IncludeOwnerInfo,
         [switch]$IncludeSheetVersion,
         [switch]$IncludePermaLinks,
         [switch]$LoadNestedFolder
@@ -245,7 +294,7 @@ function Get-SmartsheetWorkspace() {
             $Includes = "permalinks"
         }
     }
-    if ($InlcudeOwnerInfo) {
+    if ($IncludeOwnerInfo) {
         if ($Includes) {
             $Includes = "{0},ownerInfo" -f $Includes
         } else {
@@ -277,6 +326,26 @@ function Get-SmartsheetWorkspace() {
     } catch {
         throw $response.message
     }
+    <#
+    .SYNOPSIS
+    Retrieve a workspace.
+    .DESCRIPTION
+    Retrieve a workspace object.
+    .PARAMETER WorkspaceId
+    The ID of the workspace to retrieve.
+    .PARAMETER IncludeSource
+    Include the Source object indicating which object the folder was created from, if any.
+    .PARAMETER IncludeDistributionLink
+    INclude distribution links,
+    .PARAMETER IncludeOwnerInfo
+    Include owner information.
+    .PARAMETER IncludeSheetVersion
+    Include sheet version
+    .PARAMETER IncludePermaLinks
+    Include permalinks.
+    .OUTPUTS 
+    A workspace object.
+    #>
 }
 
 function Remove-SmartSheetWorkspace() {
@@ -306,6 +375,14 @@ function Remove-SmartSheetWorkspace() {
             }
         }
     }
+    <#
+    .SYNOPSIS 
+    Delete a Smartsheet workspace.
+    .DESCRIPTION
+    Deletes the specified workspace.
+    .PARAMETER Id
+    The Id of thw workspace to delete.    
+    #>
 }
 
 function Set-SmartSheetWorkspace() {
@@ -337,6 +414,18 @@ function Set-SmartSheetWorkspace() {
     } catch {
         throw $response.message
     }
+    <#
+    .SYNOPSIS
+    Rename a workspace
+    .DESCRIPTION
+    Rename a workspace with teh specified name.
+    .PARAMETER Id
+    The Id of thw workspace to rename.
+    .PARAMETER Name
+    The new name of the workspace.
+    .OUTPUTS
+    Object containing the renamed workspace.
+    #>
 }
 
 function Copy-SmartsheetWorkspace() {
@@ -517,6 +606,53 @@ function Copy-SmartsheetWorkspace() {
     } catch {
         throw $response.message
     }
+    <#
+    .SYNOPSIS
+    Copies a workspace.
+    .DESCRIPTION
+    Copies a workspace to the specified destination.
+    .PARAMETER Id
+    The Id of the workspace to copy.
+    .PARAMETER NewName
+    The new name of the workspace.
+    .PARAMETER DestinationId
+    The Id of the destination container (when copying or moving a sheet or a folder). Required if destinationType is "folder" or "workspace". 
+    If destinationType is "home", this value must be null.
+    .PARAMETER DestinationType
+    Type of the destination container.
+    .PARAMETER IncludeAll
+    Include all of the below elements in the Workspace.
+    .PARAMETER IncludeAttachments
+    Include attachments.
+    .PARAMETER IncludeBrands
+    Include brands.
+    .PARAMETER IncludeCellLinks
+    Include cell links.
+    .PARAMETER IncludeData
+    Include data.
+    .PARAMETER IncludeDiscussions
+    Include discussions.
+    .PARAMETER IncludeFilters
+    Include filters.
+    .PARAMETER IncludeForms
+    Include forms.
+    .PARAMETER IncludeRuleRecipients
+    Include recipients.
+    .PARAMETER IncludeRules
+    Include rules.
+    .PARAMETER IncludeShares
+    Include shares.
+    .PARAMETER ExcludeCellLinksRemap
+    Exclude cell link remaps.
+    .PARAMETER ExcludeReportsRemap
+    Exclude reports remaps.
+    .PARAMETER ExcludeSheetHyperlinkRemap
+    Exclude Sheet Hyperlink remaps.
+    .PARAMETER ExcludeSightsRemap
+    Exclude dashboard remaps.
+    .OUTPUTS
+    Object containing a workspace object for the new workspace destination.
+    #>
 }
 
 function Get-SmartsheetWorkspaceFolders() {
@@ -544,6 +680,20 @@ function Get-SmartsheetWorkspaceFolders() {
             throw $response.message
         }
     }
+    <#
+    .SYNOPSIS
+    Retrieve workspace folders.
+    .DESCRIPTION
+    Retrieve a collection of the top level folders in a workspace.
+    .PARAMETER Id
+    The Id of the workspace to retrieve folders from.
+    .OUTPUTS
+    An array of folder objects.
+    .NOTES
+    The returned collection consists of abbreviated folder objects. These object contain only the id, name, and permalink properties.
+    You cannot return a recursive list with this function. To get a recursive list of subfolder use the Get-SmartsheetFolders function and provide the
+    Id of one of the top level folders returned by this function.
+    #>
 }
 
 function Add-SmartsheetWorkspaceFolder() {
@@ -579,5 +729,19 @@ function Add-SmartsheetWorkspaceFolder() {
             throw $response.message
         }
     }
+    <#
+    .SYNOPSIS
+    Create a folder in a Smartsheet workspace.
+    .DESCRIPTION
+    Create a top level folder in a workspace.
+    .PARAMETER Id
+    The Id of the workspace to create the folder in.
+    .PARAMETER Name
+    The name of the folder.
+    .OUTPUTS
+    An object containing the newly created folder.
+    .NOTES
+    This function can only create top level folder. To create a subfolder us the Add-SmartsheetFolder function.
+    #>
 }
 

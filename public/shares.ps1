@@ -56,7 +56,7 @@ function Add-SmartsheetShare() {
     .SYNOPSIS
     Share a smartsheet.
     .DESCRIPTION
-    Adds a sharing object to the smartsheetoptionally sending an email to the person the sheet is shared with.
+    Adds a sharing object to the smartsheet optionally sending an email to the person the sheet is shared with.
     .PARAMETER Id
     Sheet id of the sheet to share.
     .PARAMETER accessLevel
@@ -64,13 +64,13 @@ function Add-SmartsheetShare() {
     .PARAMETER sendEmail
     Send an email to the user you are sharing the sheet with.
     .PARAMETER email
-    Emai address of the person you are sharing the sheet with.
+    Email address of the person you are sharing the sheet with.
     .PARAMETER subject
     Subject of the email.
     .PARAMETER message
     Body of the email.
     .PARAMETER ccMe
-    send a carbon copy tothe sender.
+    send a carbon copy to the sender.
     #>
 }
 
