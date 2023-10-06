@@ -8,7 +8,7 @@ function Add-SmartsheetRow() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true, ParameterSetName = "row")]
         [psObject]$Row,        
         [Parameter(ParameterSetName = 'props')]        
@@ -101,7 +101,7 @@ function Add-SmartsheetRows() {
             Mandatory = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [psobject[]]$Rows,
         [switch]$PassThru
@@ -148,9 +148,10 @@ function Remove-SmartsheetRow() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('SheetId')]
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$rowId,
+        [UInt64]$rowId,
         [switch]$PassThru
     )
 
@@ -194,9 +195,10 @@ function Remove-SmartsheetRows() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('SheetId')]
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string[]]$rowIds,
+        [UInt64[]]$rowIds,
         [bool]$ignoreRowsNotFound,
         [switch]$PassThru
     )
@@ -251,7 +253,7 @@ function Set-SmartsheetRow() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,        
+        [UInt64]$Id,        
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "row"
@@ -261,7 +263,7 @@ function Set-SmartsheetRow() {
             Mandatory = $true,
             ParameterSetName = 'props'
         )]
-        [string]$rowId,
+        [UInt64]$rowId,
         [Parameter(ParameterSetName = 'props')]
         [bool]$expanded,
         [Parameter(ParameterSetName = 'props')]
@@ -337,6 +339,7 @@ function Set-SmartsheetRows() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('SheetId')]
         [string]$Id,
         [psobject[]]$Rows,
         [switch]$PassThru
@@ -384,9 +387,10 @@ function Get-SmartsheetRow() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('SheetId')]
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$rowId,
+        [UInt64]$rowId,
         [switch]$includeColumns
     )
     $Headers = Get-Headers
@@ -425,7 +429,7 @@ function Export-SmartsheetRows() {
         )]
         [psobject]$InputObject,
         [Parameter(Mandatory = $true)]
-        [string]$sheetId,
+        [UInt64]$sheetId,
         [switch]$blankRowAbove,
         [string]$title,
         [string]$titleFormat,
@@ -552,10 +556,10 @@ function Send-SmartsheetRowsViaEmail() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string[]]$rowIds,
-        [string[]]$columnIds,
+        [UInt64[]]$rowIds,
+        [UInt64[]]$columnIds,
         [Parameter(Mandatory = $true)]
         [string[]]$To,
         [string]$subject,
@@ -639,11 +643,11 @@ function Copy-SmartSheetRows() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sourceSheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$targetSheetId,
+        [UInt64]$targetSheetId,
         [Parameter(Mandatory = $true)]
-        [string[]]$rowIds,
+        [UInt64[]]$rowIds,
         [Parameter(ParameterSetName='all')]
         [switch]$includeAll,
         [Parameter(ParameterSetName = 'each')]
@@ -739,11 +743,11 @@ function Move-SmartSheetRows() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sourceSheetId')]
-        [string]$id,
+        [UInt64]$id,
         [Parameter(Mandatory = $true)]
-        [string]$targetSheetId,
+        [UInt64]$targetSheetId,
         [Parameter(Mandatory = $true)]
-        [string[]]$rowIds,
+        [UInt64[]]$rowIds,
         [Parameter(ParameterSetName='all')]
         [switch]$includeAll,
         [Parameter(ParameterSetName = 'each')]

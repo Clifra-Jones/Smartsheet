@@ -4,11 +4,11 @@ function Add-SmartSheetCellImage() {
             ValueFromPipelineByPropertyName = $true,
             Mandatory = $true
         )]
-        [string]$Id,        
+        [UInt64]$Id,        
         [Parameter(Mandatory = $true)]
-        [string]$rowId,
+        [UInt64]$rowId,
         [Parameter(Mandatory = $true)]
-        [string]$columnId,
+        [UInt64]$columnId,
         [Parameter(Mandatory = $true)]
         [string]$Path,
         [string]$altText
@@ -66,7 +66,7 @@ function Get-SmartsheetImageUrl() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('imageId')]
-        [string]$Id,
+        [UInt64]$Id,
         [string]$saveAs
     )
     $Headers = Get-Headers

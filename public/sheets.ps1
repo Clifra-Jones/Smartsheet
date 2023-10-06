@@ -7,7 +7,8 @@ function New-Smartsheet() {
         [Parameter(
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('FolderId', 'WorkspaceId')]
+        [UInt64]$Id,
         [ValidateSet('home','folder','workspace')]
         [string]$ContainerType = 'home',
         [Parameter(Mandatory = $true)]
@@ -29,7 +30,7 @@ function New-Smartsheet() {
                 }
             }
         )]
-        [string]$TemplateId,
+        [UInt64]$TemplateId,
         [ValidateScript(
             {
                 if ($_) {
@@ -194,7 +195,8 @@ function Get-Smartsheet () {
             ValueFromPipelineByPropertyName = $true,
             ParameterSetName = "id"
         )]
-        [string]$id,
+        [Alias('SheetId')]
+        [UInt64]$id,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "name"
@@ -218,7 +220,7 @@ function Get-Smartsheet () {
         [switch]$includeWriterInfo,
         [switch]$excludeFilteredOutRows,
         [switch]$excludeLinkInFromCellDetails,
-        [switch]$excludelinksOutToCellDetails,
+        [switch]$excludeLinkOutToCellDetails,
         [switch]$excludeNonexistentCells,
         [psobject[]]$columnIds,
         [psobject[]]$rowIds
@@ -249,7 +251,7 @@ function Get-Smartsheet () {
         $excludes = [List[string]]::New()
         if ($excludeFilteredOutRows) {$excludes.Add("filteredOutRows")}
         if ($excludeLinkInFromCellDetails) {$excludes.Add("linkInFromCellDetails")}
-        if ($excludelinksOutToCellDetails) {$excludes.Add("linksOutToCellsDetails")}
+        if ($excludeLinkOutToCellDetails) {$excludes.Add("linksOutToCellsDetails")}
         if ($excludeNonexistentCells) {$excludes.Add("nonexistentCells")}
     }
 
@@ -390,7 +392,7 @@ function Get-Smartsheet () {
     Excludes filtered out rows from response payload if a sheet filter is applied; includes total number of filtered rows
     .PARAMETER excludeLinkInFromCellDetails
     Excludes the following attributes from the cell.linkInFromCell object: columnId, rowId, status
-    .PARAMETER excludelinksOutToCellDetails
+    .PARAMETER excludeLinkOutToCellDetails
     Excludes the following attributes from the cell.linksOutToCells array elements: columnId, rowId, status
     .PARAMETER excludeNonexistentCells
     Excludes cells that have never contained any data
@@ -416,7 +418,8 @@ function Remove-Smartsheet() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id
+        [Alias('SheetId')]
+        [UInt64]$Id
     )
 
     $Headers = Get-Headers
@@ -445,7 +448,8 @@ function Copy-Smartsheet() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('SheetId')]
+        [UInt64]$Id,
         [string]$newSheetName,
         [Parameter(ParameterSetName="container")]
         [string]$containerId,
@@ -460,7 +464,7 @@ function Copy-Smartsheet() {
         [switch]$includeAttachments,
         [switch]$includeCellLinks,
         [switch]$includeFormatting,
-        [switch]$includefilters,
+        [switch]$includeFilters,
         [switch]$includeForms,
         [switch]$includeRuleRecipients,
         [switch]$includeRules,
@@ -485,7 +489,7 @@ function Copy-Smartsheet() {
         if ($includeFormatting) {
             $includes += "data"
         }
-        if ($includefilters) {
+        if ($includeFilters) {
             $includes += "filters"
         }
         if ($includeForms) {
@@ -561,7 +565,7 @@ function Copy-Smartsheet() {
     Include cell links.
     .PARAMETER includeFormatting
     Include formatting
-    .PARAMETER includefilters
+    .PARAMETER includeFilters
     Include filters
     .PARAMETER includeForms
     Include forms
@@ -583,7 +587,8 @@ function Rename-SmartSheet() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('SheetId')]
+        [Uint64]$Id,
         [Parameter(Mandatory = $true)]
         [String]$NewSheetName
     )
@@ -611,8 +616,8 @@ function Move-Smartsheet() {
             ValueFromPipeline = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [Alias('sheetId')]
-        [string]$Id,
+        [Alias('SheetId')]
+        [UInt64]$Id,
         [Parameter(ParameterSetName = "container")]
         [string]$containerId,
         [Parameter(ParameterSetName = "container")]
@@ -662,7 +667,8 @@ function Get-SortedSmartsheet() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$id,
+        [Alias('SheetId')]
+        [UInt64]$id,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "Multi")]
@@ -671,7 +677,7 @@ function Get-SortedSmartsheet() {
             Mandatory = $true,
             ParameterSetName = "single"
         )]
-        [string]$columnId,
+        [uint64]$columnId,
         [Parameter(ParameterSetName = "single")]
         [ValidateSet("ASCENDING","DESCENDING")]
         [string]$direction = "ASCENDING"
@@ -748,7 +754,8 @@ function Send-SmartsheetViaEmail() {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [Alias('SheetId')]
+        [UInt64]$Id,
         [ValidateSet('EXCEL','PDF','PDF_GANTT')]
         [string]$format,
         [ValidateSet(

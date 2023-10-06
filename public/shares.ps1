@@ -6,7 +6,7 @@ function Add-SmartsheetShare() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [ValidateSet(
             "ADMIN","COMMENTER","EDITOR","EDITOR_SHARE","OWNER","VIEWER"
@@ -82,7 +82,7 @@ function Get-SmartsheetShares() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id
+        [UInt64]$Id
     )
 
     Begin{
@@ -118,9 +118,9 @@ function Get-SmartSheetShare() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$shareId
+        [UInt64]$shareId
     )
 
     Begin {
@@ -157,9 +157,9 @@ function Remove-SmartsheetShare() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$shareId
+        [UInt64]$shareId
     )
 
     Begin {
@@ -201,9 +201,9 @@ function Set-SmartsheetShare() {
             ValueFromPipelineByPropertyName = $true            
         )]
         [Alias("sheetId")]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$shareId,
+        [UInt64]$shareId,
         [Parameter(Mandatory = $true)]
         [ValidateSet(
             "ADMIN","COMMENTER","EDITOR","EDITOR_SHARE","OWNER","VIEWER"
@@ -252,9 +252,9 @@ function Copy-SmartsheetShares() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sourceSheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$targetSheetId
+        [UInt64]$targetSheetId
     )
 
     $Shares = (Get-SmartsheetShares -Id $sourceSheetId).Where({$_.accessLevel -ne 'OWNER'})

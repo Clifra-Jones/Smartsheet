@@ -7,7 +7,7 @@ function Get-SmartsheetDiscussions() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [switch]$includeAllComments,
         [switch]$includeAttachments
     )
@@ -61,9 +61,9 @@ function Get-SmartsheetDiscussion() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$discussionId
+        [UInt64]$discussionId
     )
 
     $Headers = Get-Headers -AuthOnly
@@ -96,7 +96,7 @@ function Add-SmartsheetDiscussion() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [string]$text
     )
@@ -145,9 +145,9 @@ function Remove-SmartsheetDiscussion() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetid')]
-        [string]$id,
+        [UInt64]$id,
         [Parameter(Mandatory = $true)]
-        [string]$discussionId
+        [UInt64]$discussionId
     )
 
     $Headers = Get-Headers -AuthOnly
@@ -187,9 +187,9 @@ function Get-SmartsheetRowDiscussions() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$id,
+        [UInt64]$id,
         [Parameter(Mandatory = $true)]
-        [string]$rowId,
+        [UInt64]$rowId,
         [switch]$includeComments,
         [switch]$includeAttachments
     )
@@ -242,9 +242,9 @@ function Add-SmartsheetRowDiscussion() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$id,
+        [UInt64]$id,
         [Parameter(Mandatory = $true)]
-        [string]$rowId,
+        [UInt64]$rowId,
         [Parameter(Mandatory=$true)]
         [string]$text
     )
@@ -291,9 +291,9 @@ function Get-SmartSheetComment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [uint64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$commentId
+        [UInt64]$commentId
     )
 
     $Headers = Get-Headers -AuthOnly
@@ -326,9 +326,9 @@ function Set-SmartSheetComment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [uint64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$commentId,
+        [UInt64]$commentId,
         [Parameter(Mandatory = $true)]
         [string]$text
     )
@@ -376,7 +376,7 @@ function Remove-SmartsheetComment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [string]$commentId
     )
@@ -415,9 +415,9 @@ function Add-SmartsheetComment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$discussionId,
+        [UInt64]$discussionId,
         [Parameter(Mandatory = $true)]
         [string]$text
     )
@@ -463,9 +463,9 @@ function Copy-SmartsheetDiscussions() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sourceSheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$targetSheetId
+        [UInt64]$targetSheetId
     )
 
     # Get the source Discussions

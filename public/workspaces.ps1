@@ -254,8 +254,12 @@ function Add-SmartsheetWorkspace() {
 function Get-SmartsheetWorkspace() {
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory)]
-        [string]$WorkspaceId,
+        [Parameter(
+            Mandatory,
+            ValueFromPipelineByPropertyName
+        )]
+        [Alias('WorkspaceId')]
+        [UInt64]$Id,
         [switch]$IncludeSource,   
         [switch]$IncludeDistributionLink,
         [switch]$IncludeOwnerInfo,
@@ -264,7 +268,7 @@ function Get-SmartsheetWorkspace() {
         [switch]$LoadNestedFolder
     )
 
-    $Uri = "{0}/workspaces/{1}" -f $BaseURI, $WorkspaceId
+    $Uri = "{0}/workspaces/{1}" -f $BaseURI, $Id
 
     $Headers = Get-Headers
 
@@ -356,7 +360,7 @@ function Remove-SmartSheetWorkspace() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [string]$Id
+        [UInt64]$Id
     )
 
     Begin {
@@ -393,7 +397,7 @@ function Set-SmartSheetWorkspace() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [string]$Id,
+        [uint64]$Id,
         [Parameter(Mandatory)]
         [string]$Name
     )
@@ -436,10 +440,10 @@ function Copy-SmartsheetWorkspace() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [string]$Id,
+        [uint64]$Id,
         [Parameter(Mandatory)]
         [string]$NewName,
-        [string]$DestinationId,
+        [uint64]$DestinationId,
         [ValidateSet("Folder","Home","Workspace")]
         [ValidateScript(
             {
@@ -663,7 +667,7 @@ function Get-SmartsheetWorkspaceFolders() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [string]$Id
+        [uint64]$Id
     )
 
     Begin {
@@ -704,7 +708,7 @@ function Add-SmartsheetWorkspaceFolder() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [string]$Id,
+        [uint64`]$Id,
         [Parameter(Mandatory)]
         [string]$Name
     )

@@ -4,9 +4,9 @@ function Get-SmartsheetColumn () {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [uInt64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$ColumnId
+        [UInt64]$ColumnId
     )
     Begin {
         $Headers = Get-Headers
@@ -38,11 +38,11 @@ function Set-SmartsheetColumn {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(
             Mandatory = $true
         )]
-        [string]$ColumnId,
+        [UInt64]$ColumnId,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'column'
@@ -186,7 +186,7 @@ function Get-SmartsheetColumns () {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id
+        [uint64]$Id
     )
 
     $Headers = Get-Headers
@@ -214,7 +214,7 @@ function Add-SmartsheetColumn() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [uint64]$Id,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = "column"
@@ -381,7 +381,7 @@ function Add-SmartsheetColumns() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [psobject[]]$columns,
         [switch]$PassThru
@@ -426,9 +426,9 @@ function Remove-SmartsheetColumn() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [uint64]$Id,
         [Parameter(Mandatory = $true)]
-        [string]$columnId,
+        [uint64]$columnId,
         [switch]$PassThru
     )
 

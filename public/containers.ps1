@@ -2,7 +2,7 @@ using namespace System.Collections.Generic
 function Remove-SmartsheetFolder() {
     Param(
         [Parameter(Mandatory = $true)]
-        [string]$folderId
+        [UInt64]$folderId
     )
 
     $Headers = Get-Headers
@@ -33,7 +33,7 @@ function Get-SmartsheetFolders() {
             ValueFromPipelineByPropertyName
         )]
         [Alias('folderId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(
             DontShow,
             ValueFromPipelineByPropertyName)]
@@ -114,7 +114,7 @@ function New-SmartsheetFolder() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('folderId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [string]$folderName
     )
@@ -224,7 +224,7 @@ function New-SmartSheetHomeFolder() {
 function Get-SmartsheetFolder() {
     Param(
         [Parameter(Mandatory = $true)]
-        [string]$folderId
+        [uint64]$folderId
     )
 
     $Headers = Get-Headers

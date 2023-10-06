@@ -72,9 +72,9 @@ function Export-SmartSheet() {
         [Parameter(Mandatory = $true)]
         [string]$SheetName,
         [Parameter(ParameterSetName='folder')] 
-        [string]$FolderId,
+        [uint64]$FolderId,
         [Parameter(ParameterSetName='workspace')]
-        [string]$WorkspaceId,
+        [UInt64]$WorkspaceId,
         [int]$headerRow,
         [int]$primaryColumn,
         [ValidateSet(
@@ -215,7 +215,7 @@ function Update-Smartsheet() {
         )]
         [psObject]$InputObject,
         [Parameter(Mandatory = $true)]
-        [string]$sheetId        
+        [UInt64]$sheetId        
     )
 
     $sheet = Get-Smartsheet -id $sheetId

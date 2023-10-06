@@ -64,7 +64,7 @@ function Search-Smartsheet() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(Mandatory = $true)]
         [string]$searchText,
         [switch]$exact

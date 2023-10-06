@@ -6,7 +6,7 @@ function Get-SmartsheetAttachments() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias("sheetId")]
-        [string]$id        
+        [UInt64]$id        
     )
     $Headers = Get-Headers 
     $Uri = "{0}/sheets/{1}/attachments" -f $BaseURI, $Id
@@ -37,7 +37,7 @@ function Add-SmartsheetAttachment() {
             ValueFromPipelineByPropertyName = $true            
         )]
         [Alias("sheetId")]
-        [string]$Id,
+        [UInt64]$Id,
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'file'
@@ -142,7 +142,7 @@ function Get-SmartsheetAttachment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$id,
+        [UInt64]$id,
         [Parameter(
             Mandatory = $true
         )]        
@@ -269,7 +269,7 @@ function New-SmartSheetCommentAttachment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [string]$id,
+        [uint64]$id,
         [Parameter(Mandatory = $true)]
         [string]$commentId,
         [Parameter(Mandatory = $true)]
