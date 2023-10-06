@@ -215,7 +215,8 @@ function Update-Smartsheet() {
         )]
         [psObject]$InputObject,
         [Parameter(Mandatory = $true)]
-        [UInt64]$sheetId        
+        [UInt64]$sheetId,
+        [switch]$PassThru     
     )
 
     $sheet = Get-Smartsheet -id $sheetId
@@ -276,15 +277,19 @@ function Update-Smartsheet() {
         # Does the row exist based on the primary Column column
         $row = $sheet.rows.Where({$_.cells[$pcIndex].value -eq $props[$pcIndex].value})
         if ($row) {
-            $sheet = Set-SmartsheetRow -id $sheetId -rowId $row.Id -Cells $cells -PassThru
+            [void](Set-SmartsheetRow -id $sheetId -rowId $row.Id -Cells $cells)
         } else {       
             $index = $input.IndexOf($object)
             if ($index -lt ($sheet.rows.Count -1)) {
                 $siblingRowId = $sheet.rows[$index].id
-                $sheet = Add-SmartsheetRow -sheetId $sheet.id -siblingRowId $siblingRowId -cells $cells -location:below -PassThru
+                [void](Add-SmartsheetRow -sheetId $sheet.id -siblingRowId $siblingRowId -cells $cells -location:below)
             } else {
-                $sheet = Add-SmartsheetRow -sheetId $sheet.id -cells $cells -PassThru
+                [void](Add-SmartsheetRow -sheetId $sheet.id -cells $cells)
             }
+        }
+        if ($PassThru) {
+            $newSheet = Get-Smartsheet -SheetId $sheet.id
+            return $newSheet
         }
     }
     <#
