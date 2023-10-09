@@ -276,6 +276,9 @@ function Update-Smartsheet() {
         }
         # Does the row exist based on the primary Column column
         $row = $sheet.rows.Where({$_.cells[$pcIndex].value -eq $props[$pcIndex].value})
+        If ($row -is [array]) {
+            throw "Primary column is not unique!"
+        }
         if ($row) {
             [void](Set-SmartsheetRow -id $sheetId -rowId $row.Id -Cells $cells)
         } else {       
