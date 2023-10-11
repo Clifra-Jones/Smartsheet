@@ -328,10 +328,14 @@ function Get-Smartsheet () {
         }
         $Sheet = Invoke-RestMethod -Method Get -Uri $Uri -Headers $Header
         $ToArray_Script = {
+            param([boolean]$IncludeRowId)
             $psSheet = New-Object System.Collections.Generic.List[psobject]
             foreach ($Row in $this.rows) {                
-               $Props = [ordered]@{}
-               foreach ($Cell in $row.cells) {
+                $Props = [ordered]@{}
+                if ($IncludeRowId) {
+                    $Props.Add("rowId", $row.id)
+                }
+                foreach ($Cell in $row.cells) {
                     $PropName = $this.columns.Where({$_.id -eq $Cell.columnId}).title
                     $Props.Add($PropName, $Cell.value)                    
                 }

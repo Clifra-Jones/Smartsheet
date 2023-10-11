@@ -216,6 +216,7 @@ function Update-Smartsheet() {
         [psObject]$InputObject,
         [Parameter(Mandatory = $true)]
         [UInt64]$sheetId,
+        [switch]$UseRowId,
         [switch]$PassThru     
     )
 
@@ -228,6 +229,9 @@ function Update-Smartsheet() {
     $pcIndex = $columns.IndexOf($PrimaryColumn)
 
     $properties = $input[0].PSObject.properties | Select-Object Name
+    If ($UseRowId) {
+        $properties = $properties | Select-Object -Skip 1
+    } 
 
     if ($columns.count -ne $properties.count) {
         throw "Column count does not match!"
@@ -242,6 +246,9 @@ function Update-Smartsheet() {
 
     foreach ($object in $input) {
         $props = $object.PSObject.properties | Select-Object Name, Value
+        if ($UseRowId) {
+            $props = $Props | Select-Object -Skip 1
+        }
         $cells = @()
         foreach ($prop in $props) {
             $index = $props.indexOf($prop)
@@ -274,8 +281,14 @@ function Update-Smartsheet() {
             $cell = New-SmartSheetCell -columnId $column.id -value $prop.value
             $cells += $cell
         }
-        # Does the row exist based on the primary Column column
-        $row = $sheet.rows.Where({$_.cells[$pcIndex].value -eq $props[$pcIndex].value})
+        if ($UseRowId) {
+            # Get to row to update based on the RowId Property
+            $row = $sheet.rows.where({$_.id -eq $Object.RowId})
+        } else {
+            # Get the row based on a unique primary column.
+            # Does the row exist based on the primary Column column
+            $row = $sheet.rows.Where({$_.cells[$pcIndex].value -eq $props[$pcIndex].value})
+        }
         If ($row -is [array]) {
             throw "Primary column is not unique!"
         }
@@ -290,10 +303,11 @@ function Update-Smartsheet() {
                 [void](Add-SmartsheetRow -sheetId $sheet.id -cells $cells)
             }
         }
-        if ($PassThru) {
-            $newSheet = Get-Smartsheet -SheetId $sheet.id
-            return $newSheet
-        }
+
+    }
+    if ($PassThru) {
+        $newSheet = Get-Smartsheet -SheetId $sheet.id
+        return $newSheet
     }
     <#
     .SYNOPSIS
