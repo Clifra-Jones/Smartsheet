@@ -224,7 +224,7 @@ function New-SmartSheetHomeFolder() {
 function Get-SmartsheetFolder() {
     Param(
         [Parameter(Mandatory = $true)]
-        [uint64]$folderId
+        [Uint64]$folderId
     )
 
     $Headers = Get-Headers

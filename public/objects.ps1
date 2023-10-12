@@ -55,11 +55,11 @@ function New-SmartSheetCell() {
 function New-Hyperlink() {
     Param(
         [Parameter(ParameterSetName = "reportId")]
-        [uint64]$reportId = 0,
+        [Uint64]$reportId = 0,
         [Parameter(ParameterSetName = "sheetId")]
-        [uint64]$sheetId = 0,
+        [Uint64]$sheetId = 0,
         [Parameter(ParameterSetName = "sightId")]
-        [uint64]$sightId = 0,
+        [Uint64]$sightId = 0,
         [Parameter(ParameterSetName = "url")]
         [string]$url=""
     )
@@ -91,13 +91,13 @@ function New-Hyperlink() {
 function New-CellLink() {
     Param(
         [Parameter(Mandatory = $true)]
-        [uint64]$sheetId,
+        [Uint64]$sheetId,
         [Parameter(Mandatory = $true)]
         [string]$sheetName,
         [Parameter(Mandatory = $true)]
-        [uint64]$columnId,
+        [Uint64]$columnId,
         [Parameter(Mandatory = $true)]
-        [uint64]$rowId
+        [Uint64]$rowId
     )
 
     $cellLink = [PSCustomObject]@{

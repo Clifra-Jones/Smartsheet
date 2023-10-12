@@ -269,7 +269,7 @@ function New-SmartSheetCommentAttachment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [uint64]$id,
+        [Uint64]$id,
         [Parameter(Mandatory = $true)]
         [string]$commentId,
         [Parameter(Mandatory = $true)]

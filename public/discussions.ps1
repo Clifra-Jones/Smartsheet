@@ -291,7 +291,7 @@ function Get-SmartSheetComment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [uint64]$Id,
+        [Uint64]$Id,
         [Parameter(Mandatory = $true)]
         [UInt64]$commentId
     )
@@ -326,7 +326,7 @@ function Set-SmartSheetComment() {
             ValueFromPipelineByPropertyName = $true
         )]
         [Alias('sheetId')]
-        [uint64]$Id,
+        [Uint64]$Id,
         [Parameter(Mandatory = $true)]
         [UInt64]$commentId,
         [Parameter(Mandatory = $true)]

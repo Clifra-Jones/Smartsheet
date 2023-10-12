@@ -72,7 +72,7 @@ function Export-SmartSheet() {
         [Parameter(Mandatory = $true)]
         [string]$SheetName,
         [Parameter(ParameterSetName='folder')] 
-        [uint64]$FolderId,
+        [Uint64]$FolderId,
         [Parameter(ParameterSetName='workspace')]
         [UInt64]$WorkspaceId,
         [int]$headerRow,
@@ -164,7 +164,6 @@ function Export-SmartSheet() {
         specify the folder ID of the folder inside the workspace. 
         At this time you cannot get a recursive list of all folders in a workspace, You can get a recursive list of all subfolders of a workspace folder.
         Use the Get-SmartsheetFolders function, specifying the top level folder ID and the Recursive property.
-
         
         .PARAMETER headerRow
         Row to use for column headers. 
@@ -315,13 +314,37 @@ function Update-Smartsheet() {
     .DESCRIPTION
     Update a Smartsheet from an array of powershell objects.
     1. The number and names of the columns is the same as the properties in the object in the array.
-    2. The primary column is used to identify rows to be updated and must be unique.
-    If condition 1 isn't met, and error will be thrown.
+    2. If the array objects do not contain a property RowId then primary column is used to identify rows to be updated and must be unique.
+    3. If the Array objects contain the property RowId then this is used to identify the row to be updated. The primary column does not have to be unique.    
     .PARAMETER InputObject
     An array of powershell objects.
     .PARAMETER sheetId
     The Id of the sheet to update.
+    .PARAMETER UseRowId
+    This assumes that the objects in the array have a property called RowId which contains the Smartsheet row Id for the data,
+    This will update the row associated with that Row Id.
+    .PARAMETER PassThru
+    Return the updated sheet object.
+    .NOTES
+    To return an array of objects from a smartsheet that contains the row id of the row the values are associated with use the ToArray method
+    on the sheet object returned by Get-Smartsheet passing a value of $true. $sheet.ToArray($true).
+
+    Updating sheet rows based on the primary column is maintained for backward compatibility. You should use the RowId method in any new projects
+    as it is more accurate and does not depend on the primary column being unique. Smartsheet does not force uniqueness on the primary column.
+
+    Updating sheets by primary column may be removed from future versions of this module.
+    .EXAMPLE
+    Update the rows in the smartsheet based on Primary Columns.
     
+    $Array | Update-Smartsheet -SheetId $sheet.id 
+    .EXAMPLE
+    Update the rows in the smartsheet based on the RowId property.
+
+    $Array | Update-Smartsheet -SheetId $Sheet.Id -UseRowId
+
+    .EXAMPLE
+    Update the rows in the smartsheet based on the RowId property and return the updated sheet.
+    $Array | Update-Smartsheet -SheetId $Sheet.Id -UseRowId -PassThru
     #>
 }
 

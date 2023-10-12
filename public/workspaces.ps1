@@ -397,7 +397,7 @@ function Set-SmartSheetWorkspace() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [uint64]$Id,
+        [Uint64]$Id,
         [Parameter(Mandatory)]
         [string]$Name
     )
@@ -440,10 +440,10 @@ function Copy-SmartsheetWorkspace() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [uint64]$Id,
+        [Uint64]$Id,
         [Parameter(Mandatory)]
         [string]$NewName,
-        [uint64]$DestinationId,
+        [Uint64]$DestinationId,
         [ValidateSet("Folder","Home","Workspace")]
         [ValidateScript(
             {
@@ -667,7 +667,7 @@ function Get-SmartsheetWorkspaceFolders() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [uint64]$Id
+        [Uint64]$Id
     )
 
     Begin {
@@ -708,7 +708,7 @@ function Add-SmartsheetWorkspaceFolder() {
             ValueFromPipelineByPropertyName
         )]
         [Alias("WorkspaceId")]
-        [uint64`]$Id,
+        [Uint64]$Id,
         [Parameter(Mandatory)]
         [string]$Name
     )

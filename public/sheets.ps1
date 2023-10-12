@@ -7,7 +7,6 @@ function New-Smartsheet() {
         [Parameter(
             ValueFromPipelineByPropertyName = $true
         )]
-        [Alias('FolderId', 'WorkspaceId')]
         [UInt64]$Id,
         [ValidateSet('home','folder','workspace')]
         [string]$ContainerType = 'home',
@@ -355,6 +354,10 @@ function Get-Smartsheet () {
     Retrieves an individual sheet by either the sheet ID or the Name.
     Note: There can be multiple sheets with the same name. Using the Sheet ID is more accurate!
     The object returned has an additional method ToArray(), this method returns an array of PowerShell objects based on the sheet rows and columns.
+    The ToArray method can accept a boolean parameter that instructs the method to include or exclude the RowId in the objects returned.
+    True will return the row Id as a property of each object in the array. False will exclude the Row Id. False is the default.
+    By using the Row id, you can update the values in a Smartsheet without the need for the primary column to be unique.
+    The previous method of updating rows is included for backward compatibility and may eventually be removed.
     .PARAMETER id
     Folder ID, cannot be used with the Name parameter.
     .PARAMETER Name
@@ -410,6 +413,7 @@ function Get-Smartsheet () {
     When retrieving a smartsheet by name there is always the chance that there are multiple sheets with the same name in a folder.
     If more than one sheet have the same name, you will be prompted to select the sheet yu want from a list. 
     The list will show Sheet name and modified date.
+
     .OUTPUTS
     A Smartsheet sheet object.
     There is an added method named ToArray that returns the sheet as an array of PowerShell objects.
@@ -681,7 +685,7 @@ function Get-SortedSmartsheet() {
             Mandatory = $true,
             ParameterSetName = "single"
         )]
-        [uint64]$columnId,
+        [Uint64]$columnId,
         [Parameter(ParameterSetName = "single")]
         [ValidateSet("ASCENDING","DESCENDING")]
         [string]$direction = "ASCENDING"
