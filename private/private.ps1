@@ -7,6 +7,10 @@ $script:BaseURI = "https://api.smartsheet.com/2.0"
 function Read-Config () {
     $ConfigPath = "$home/.smartsheet/config.json"
     $config = Get-Content -Raw -Path $ConfigPath | ConvertFrom-Json
+    if ($Config.APIKey -eq 'secure') {
+        $Secret = Get-Secret -Name 'Smartsheet' -AsPlainText | ConvertFrom-Json
+        $Config.APIKey = $Secret.APIKey
+    }
     return $config
 }
 

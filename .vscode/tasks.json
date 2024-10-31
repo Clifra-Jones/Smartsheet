@@ -1,0 +1,59 @@
+{
+   "version": "2.0.0",
+
+    "linux": {
+        "options": {
+            "shell": {
+                "executable": "/usr/bin/pwsh",
+                "args": [ "-NoProfile", "-Command"]
+            }
+        }
+    },
+
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "command": "Invoke-PSake psake.ps1 -taskList Build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Publish",
+            "type": "shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "command": "Invoke-PSake psake.ps1 -TaskList Publish -parameters @{testpublish = '${input:testpublish}'}",
+            "problemMatcher":[]
+        },
+
+    ],
+    "inputs": [
+        {
+            "id": "testpublish",
+            "description": "Test Publish?",
+            "type": "pickString",
+            "options": [
+                "yes",
+                "no"
+            ]
+        }
+    ]
+}

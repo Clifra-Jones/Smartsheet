@@ -28,13 +28,28 @@ foreach ($mime in $mimes) {
 
 # Setup Functions
 function Set-SmartsheetAPIKey () {
+    [CmdletBinding(DefaultParameterSetName='default')]
     Param(
         [Parameter(Mandatory = $true)]
-        [string]$APIKey
+        [string]$APIKey,
+        [switch]$Secure
     )
-    $objConfig = @{
-        APIKey = $APIKey        
+
+    If ($Secure) {
+        $Secretin = @{
+            APIKey = $APIKey
+        }
+        $Secret = $SecretIn | ConvertTo-Json
+        Set-Secret -Name SmartSheet -Secret $Secret 
+        $objConfig = @{
+            APIKey = 'secure'
+        }
+    } else {
+        $objConfig = @{
+            APIKey = $APIKey        
+        }
     }
+
     $configPath = "{0}/.smartsheet" -f $HOME
 
     if (-not (Test-Path -Path $configPath)) {
@@ -49,10 +64,41 @@ function Set-SmartsheetAPIKey () {
     
     .DESCRIPTION
     Creates a file in the user profile folder in the .smartsheet folder named config.json.
-    This file contains the users Smaretsheet API Token.
+    This file contains the users Smartsheet API Token.
 
     .PARAMETER APIKey
     The Smartsheet API Access Token.
+
+    .PARAMETER Secure
+    This switch instructs the function to save the APIKey into a secure vault.
+    This vaule is created and managed by the modules:
+    Microsoft.PowerShell.SecretManagement
+    Microsoft.PowerShell.SecretStore
+    See the note below on how to setup a secret store.
+
+    .NOTES
+    To use a secret store to securely store you API key, you must install the required modules
+    and configure the store and create a vaule.
+
+    To install the modules:
+    Install-Module Microsoft.PowerShell.SecretManagement
+    Install-Module Microsoft.PowerShell.SecretStore
+
+    Configure the secret store:
+    You must configure your secret store and set the authenticatio, there are several parameters:
+    -Authentication: This can ne either 'Password" or 'None' 
+    You should set a password for interactive sessions. For automation on a secure device you can set this to 'None'
+    -Interaction: This can be set to 'Prompt' or 'None' If -Authentication is set to 'Password' This must be set to 'Prompt', id Authentication is set to 'None' this must ne set to 'None'.
+    -PasswordTimeOut: The time in seconds befopre the password must be re-entered. The default is 600 seconds.
+    -Password: The password to unlock the vault. If omitted you will be prompted for the password.
+
+    Register the vault:
+    You must register a vault to store your secrets. At this time the Secret Store does not support multiple vaules. 
+    While you "can" register multiple vaults the store will just be duplicated. This is a known issue with the SecretStore and may be corrected in the future.
+    Only create 1 vault and register it as the default vault.
+
+    Register-SecretVault -Name "MyVault" -DefaultVault -ModuleName Microsoft.Powershell.SecretStore
+
     #>    
 } 
 
@@ -252,6 +298,9 @@ function Update-Smartsheet() {
         foreach ($prop in $props) {
             $index = $props.indexOf($prop)
             $column = $sheet.columns[$index]
+            if ($column.formula) {
+                Continue
+            }
             switch ($column.type) {
                 'PICKLIST' {
                     if ($prop.value) {
