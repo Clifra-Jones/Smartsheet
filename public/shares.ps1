@@ -257,7 +257,8 @@ function Copy-SmartsheetShares() {
         [UInt64]$targetSheetId
     )
 
-    $Shares = (Get-SmartsheetShares -Id $sourceSheetId).Where({$_.accessLevel -ne 'OWNER'})
+    $Shares = (Get-SmartsheetShares -Id $Id).Where({$_.accessLevel -ne 'OWNER'})
+    
     foreach ($share in $shares) {
         $targetSheetId | Add-SmartsheetShare -email $share.email -accessLevel $share.accessLevel
     }

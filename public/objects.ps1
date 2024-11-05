@@ -16,6 +16,7 @@ function New-SmartSheetCell() {
     $properties = @{
         columnId = $columnId
         value = $value
+        #displayValue = $value
     }
     if ($conditionalFormat) { $properties.Add("conditionalFormat", $conditionalFormat) }
     if ($format) { $properties.Add("format", $format) }

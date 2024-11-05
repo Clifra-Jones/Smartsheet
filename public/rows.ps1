@@ -110,7 +110,7 @@ function Add-SmartsheetRows() {
     $Headers = Get-Headers
     $Uri = "{0}/sheets/{1}/rows" -f $BaseURI, $id
 
-    $body = $Rows | ConvertTo-Json -Compress
+    $body = $Rows | ConvertTo-Json -Depth 10 -Compress
 
     try {
         $response = Invoke-RestMethod -Method POST -Uri $Uri -Headers $Headers -Body $body
@@ -341,14 +341,14 @@ function Set-SmartsheetRows() {
         )]
         [Alias('SheetId')]
         [string]$Id,
-        [psobject[]]$Rows,
+        [Object[]]$Rows,
         [switch]$PassThru
     )
 
     $Headers = Get-Headers
     $Uri = "{0}/sheets/{1}/rows" -f $BaseURI, $Id
-
-    $body = $Rows | ConvertTo-Json -Compress
+    # $jsonObjects = $rows | ForEach-Object {$_ | ConvertTo-Json -Compress -Depth 10}
+    $body = $rows | ConvertTo-Json -Depth 10
 
     try {
         $response = Invoke-RestMethod -Method PUT -Uri $Uri -Headers $Headers -Body $body
