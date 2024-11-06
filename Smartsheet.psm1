@@ -190,8 +190,10 @@ function Export-SmartSheet() {
         The column to use as the primary column. default is the 1st column.
 
         .NOTES
-        As mentioned this function ALWAYS creates a new sheet even if the name already exists. Name IS NOT the unique identifyer in smartsheet, the sheet ID is.
-        If you want to update a shee use the Update-SmartSheet funcction.
+        As mentioned this function ALWAYS creates a new sheet even if the name already exists. Name IS NOT the unique identifyer in SmartSheet, the sheet ID is.
+        If you want to update a sheet use the Update-SmartSheet function.
+
+        The overwriteAction parameter is depreceated. THis function DOES NOT handle overwriting sheets. You must manage this yourself.
         
         .EXAMPLE
         Create a new sheet in the home folder.
@@ -220,14 +222,13 @@ function Update-Smartsheet() {
         [psObject[]]$InputObject,
         [Parameter(Mandatory = $true)]
         [UInt64]$sheetId,
-        [switch]$UseRowId,
         [switch]$PassThru     
     )
 
     $sheet = Get-Smartsheet -id $sheetId
 
     $RowsToUpdate = @()
-    $RowsToInsert = @()
+    #$RowsToInsert = @()
     $RowsToAdd = @()
 
     # Verify columns, column names must match properties of the objects in the array.
@@ -260,7 +261,7 @@ function Update-Smartsheet() {
         Write-Host ("Row:{0}" -f ($Input.IndexOf($Object) + 1))
         $RowsProcessed += 1
         $props = $object.PSObject.properties | Select-Object Name, Value
-        if ($UseRowId) {
+        if ($props.name -contains "rowId") {
             $props = $props | Select-Object -Skip 1
         }
         $cells = @()
@@ -310,9 +311,9 @@ function Update-Smartsheet() {
         }
 
 
-        if ($UseRowId) {
+        if ($props.name -contains "rowId") {
             # Get to row to update based on the RowId Property
-            $row = $sheet.rows.where({ $_.id -eq $Object.RowId })
+            $row = $sheet.rows.where({ $_.id -eq $Object.rowId })
         }
         else {
             # Get the row based on a unique primary column.
@@ -391,17 +392,23 @@ function Update-Smartsheet() {
     An array of powershell objects.
     .PARAMETER sheetId
     The Id of the sheet to update.
-    .PARAMETER UseRowId
-    This assumes that the objects in the array have a property called RowId which contains the Smartsheet row Id for the data,
-    This will update the row associated with that Row Id.
+
     .PARAMETER PassThru
     Return the updated sheet object.
     .NOTES
     To return an array of objects from a smartsheet that contains the row id of the row the values are associated with use the ToArray method
     on the sheet object returned by Get-Smartsheet passing a value of $true. $sheet.ToArray($true).
 
-    Updating sheet rows based on the primary column is maintained for backward compatibility. You should use the RowId method in any new projects
-    as it is more accurate and does not depend on the primary column being unique. Smartsheet does not force uniqueness on the primary column.
+    If you are updating a collection based on the data retrieved from a sheet then the rowId isused to identify the row to be updated. 
+    Any object in the array that have the rowId property as $null will be added.
+
+    The -UseRowId parameter is deprecieated! The function identifies if this property exists.
+
+    If you are updating a sheet from external data (not modifying the sheet itself) then the properties of external data must match the columns in the sheet.
+    If the properties of the external data adds, removes, or changes or the sheet adds, removes, or changes columns YOU must handle the changes to the sheet or data manually.
+    You can add, remove, and change columns using the column functions!
+
+    If yu are not using the rowId to identify the row, then the primary column data for the row MUST BE UNIQUE! Smartsheet DOES NOT maintain this contraint!
 
     Updating sheets by primary column may be removed from future versions of this module.
     .EXAMPLE

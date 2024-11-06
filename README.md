@@ -190,3 +190,20 @@ $Sheet | Add-SmartsheetShare -AccessLevel EDITOR -SendEmail -Email johndoe@examp
 ```
 
 There are many more function that can add/remove/update sheets, rows, and columns. Manage Attachments, discussions, and comments. And add remove folders and more.
+
+# 11/05/2024 Version 1.0.2
+
+The Update-Smartsheet function has been updated. The previous version updated or added rows one at a time. This was very inefficient and slow. 
+It could also result in API rate limiting.
+
+The new version updates or adds rows in batches.
+
+Updated rows are sent in one batch and added rows are sent in another batch. New rows are appended to the sheet. We are no longer trying to insert new rows based on their position in the collection.
+
+If you are modifying a collection of Smartsheet rows, use the -UseRowId parameter to use the RowId as the row identifier. If you are not using the RowId the Primary column in the sheet MUST be unique! (Smartsheet DOES NOT enforce this)
+
+As explained in the documentation, if you are pulling in data from an external source you must make sure that the structure of your sheet does not change in relation to the external data. The columns in the input data MUST match the columns in the sheet! If Columns are added, removed, or change type, YOU must handle this manually using the Column functions before you update the sheet.
+
+The Export-Smartsheet function has deprecated the -OverwriteAction parameter. The function DOES NOT handle abt overwrite functionality.
+This function ALWAYS creates a new sheet. If a sheet of the same name exists a new one will be created with the same name (and a different sheetId).
+To update a sheet use the Update-Smartsheet function.
