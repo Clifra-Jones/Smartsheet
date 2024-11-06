@@ -238,7 +238,7 @@ function Update-Smartsheet() {
     $pcIndex = $columns.IndexOf($PrimaryColumn)
 
     $properties = $input[0].PSObject.properties | Select-Object Name
-    If ($UseRowId) {
+    If ($properties.name -contains "rowId") {
         $properties = $properties | Select-Object -Skip 1
     } 
 
@@ -258,7 +258,7 @@ function Update-Smartsheet() {
 
     foreach ($object in $input) {     
         $RowhasChanged = $False
-        Write-Host ("Row:{0}" -f ($Input.IndexOf($Object) + 1))
+        #Write-Host ("Row:{0}" -f ($Input.IndexOf($Object) + 1))
         $RowsProcessed += 1
         $props = $object.PSObject.properties | Select-Object Name, Value
         if ($props.name -contains "rowId") {
@@ -268,7 +268,7 @@ function Update-Smartsheet() {
         
         try {
         foreach ($prop in $props) {
-            Write-Host $prop.name
+            #Write-Host $prop.name
             #$Activity = "Row:{0}" -f ($Input.IndexOf($Object) + 1)
             #Write-Host $Activity
             #Write-Progress -Activity $Activity -Status $Prop.Name
