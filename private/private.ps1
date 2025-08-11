@@ -8,7 +8,7 @@ function Read-Config () {
     $ConfigPath = "$home/.smartsheet/config.json"
     $config = Get-Content -Raw -Path $ConfigPath | ConvertFrom-Json
     if ($Config.APIKey -eq 'secure') {
-        $Secret = Get-Secret -Name 'Smartsheet' -AsPlainText | ConvertFrom-Json
+        $Secret = Get-Secret -Name 'SmartSheet' -AsPlainText | ConvertFrom-Json
         $Config.APIKey = $Secret.APIKey
     }
     return $config
